@@ -115,9 +115,13 @@ void CRegistDlg::RegisterSuccess(struct MSG_REGISTER *msg_reg)
 	csID = msg_reg->nID;
 	csMsg.Format(L"注册成功！您的账号是：%s。请妥善保管好自己的账号。", csID);
 	MessageBox(csMsg);
-	((CLoginDlg *)m_pParentWnd)->m_csID.Format(L"%s", msg_reg->nID);
-	((CLoginDlg *)m_pParentWnd)->m_csKey.Format(L"%s", msg_reg->PassWord);
-	EndDialog(2);
+
+
+	((CLoginDlg *)m_pParentWnd)->m_csID = msg_reg->nID;
+	((CLoginDlg *)m_pParentWnd)->m_csKey = msg_reg->PassWord;
+	((CLoginDlg *)m_pParentWnd)->UpdateData(FALSE);
+	//EndDialog(2);
+	OnCancel();
 }
 
 

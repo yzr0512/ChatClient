@@ -54,6 +54,9 @@
     <ClInclude Include="ChatSocket.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Friend.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCChat.cpp">
@@ -78,6 +81,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ChatSocket.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Friend.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

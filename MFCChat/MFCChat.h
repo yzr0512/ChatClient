@@ -38,6 +38,7 @@ extern CMFCChatApp theApp;
 #define NAME_MAX						50
 #define EMAIL_MAX						33
 #define FRIEND_MAX						50
+#define MSG_SIZE_MAX					3358
 
 // 注册
 #define REGISTER                        5000
@@ -65,8 +66,8 @@ extern CMFCChatApp theApp;
 // 获取好友信息
 #define GET_FRIEND_INFO                 5040	// 单个
 #define GET_ALL_FRIEND_INFO             5041	// 全部
-#define UPDATE_FRIEND_INFO_BEGIN		5044
-#define UPDATE_FRIEND_INFO_FINISH		5045
+//#define UPDATE_FRIEND_INFO_BEGIN		5044
+//#define UPDATE_FRIEND_INFO_FINISH		5045
 #define GET_FRIEND_LIST                 5042
 #define GET_STRANGER_INFO               5043
 
@@ -79,6 +80,7 @@ extern CMFCChatApp theApp;
 #define DELETE_FRIEND                   5054
 
 // 账号状态
+#define SET_USER_STATUS					5064
 #define STATUS_ONLINE                   5060
 #define STATUS_BUSY                     5061
 #define STATUS_HIDE                     5062
@@ -141,7 +143,7 @@ struct MSG_SYS
 struct MSG_T
 {
 	int  nType; // 
-	char Data[1000]; // 
+	char Data[4092]; // 
 };
 
 struct MSG_ADDFRIEND

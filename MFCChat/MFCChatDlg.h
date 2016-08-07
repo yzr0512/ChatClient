@@ -11,7 +11,7 @@
 #include "LoginDlg.h"
 #include "AddFriendDlg.h"
 #include "ChatSocket.h"
-
+#include "Friend.h"
 
 
 // CMFCChatDlg 对话框
@@ -37,23 +37,36 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+
 public:
 	afx_msg void OnNMDblclkListFriend(NMHDR *pNMHDR, LRESULT *pResult);	
 	afx_msg void OnBnClickedButtonAddFriendDlg();
+	afx_msg void OnBnClickedBtDelFriend();
+	virtual void OnCancel();
+	virtual void PostNcDestroy();
 
-public:	
+	// 对话框
+	CLoginDlg* m_pLoginDlg; // 登录窗口指针
 	CAddFriendDlg* m_pAddFriendDlg; // “添加好友”对话框
-
 	std::vector<CChatDlg*> m_vecpChatDlg; // 多个聊天窗口
-
+	
+	// 本人信息
 	CString m_csMyID; // 我的ID
 	CString m_csMyName; // 我的昵称
 
-	CLoginDlg* m_pLoginDlg; // 登录窗口指针
+	// 好友
+	CFriend m_Friend;
 
 	bool SocketInit(void); // 初始化Socket	
-	int RecvMsg(void); // 接收消息
-	int SendMsg(void *msg, int nBufLen); // 发送消息
+	int SendMsg(void *msg, int nBufLen); // 发送消息	
+	
+	int RecvMsg(void); // 接收消息	
+	int SystemMessage(MSG_SYS* msg_sys);
+	int LoginSuccess(MSG_USERINFO* msg_info);	
+	int LoginOut(void); // 下线
+	int RecvAddFriendRequest(struct MSG_TRANSPOND* msg_add); // 收到好友请求
+	int UpdateFriendInfo(struct MSG_FRND_INFO* msg_info = NULL); // 更新好友基本信息
+
 
 protected:	
 	CComboBox m_cbState; // 在线状态控件
@@ -70,17 +83,5 @@ protected:
 	int RefreshChatDlgMsg(void); // 刷新聊天窗口的消息	
 	int InitFriendInfo(struct msg_friend *pMsgFriend = NULL);
 
-public:
-	afx_msg void OnBnClickedBtDelFriend();
-	virtual void OnCancel();
-	virtual void PostNcDestroy();
-	int LoginSuccess(MSG_USERINFO* msg_info);
-
-	int SystemMessage(MSG_SYS* msg_sys);
-	// 离线
-	int LoginOut(void);
-	// 收到好友请求
-	int RecvAddFriendRequest(struct MSG_TRANSPOND* msg_add);
-	int UpdateFriendInfo(struct MSG_FRND_INFO* msg_info = NULL);
 };
 

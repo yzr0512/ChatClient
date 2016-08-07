@@ -143,21 +143,7 @@ int CAddFriendDlg::ShowStrangerInfo(MSG_USERINFO* msg_info)
 	else
 		m_listctrlFriend.SetItemText(0, 3, _T("女"));
 
-	switch(msg_info->nStatus)
-	{
-	case STATUS_ONLINE:
-		m_listctrlFriend.SetItemText(0, 4, _T("在线"));
-		break;							
-	case STATUS_BUSY:					
-		m_listctrlFriend.SetItemText(0, 4, _T("忙碌"));
-		break;							
-	case STATUS_OFFLINE:				
-		m_listctrlFriend.SetItemText(0, 4, _T("离线"));
-		break;							
-	default:							
-		m_listctrlFriend.SetItemText(0, 4, _T("被外星人拐跑了"));
-		break;
-	}
+	m_listctrlFriend.SetItemText(0, 4, csTemp);
 
 	return 0;
 }

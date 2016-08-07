@@ -81,7 +81,7 @@ void CLoginDlg::OnBnClickedButtonLogin()
 	size_t i; // 已转换的字符数
 	wcstombs_s(&i, msg_lg.nID, m_csID, m_csID.GetLength() + 1); // 宽字符转多字符
 	wcstombs_s(&i, msg_lg.Key, m_csKey, m_csKey.GetLength() + 1); // 宽字符转多字符
-	msg_lg.nStatus = STATUS_ONLINE;
+	msg_lg.nStatus = IDS_STATUS_ONLINE;
 	// 发送信息
 	((CMFCChatDlg *)m_pParentWnd)->SendMsg(&msg_lg, sizeof(msg_lg));
 	

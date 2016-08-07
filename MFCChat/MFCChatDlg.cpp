@@ -327,7 +327,7 @@ bool CMFCChatDlg::SocketInit(void)
 // 接收信息
 int CMFCChatDlg::RecvMsg(void)
 {
-	int nBugLen = 512;
+	int nBugLen = 4096;
 	struct MSG_T msg_recv; // 接收到的数据
 	int nRes; // 接收到的字节数
 	nRes = m_pSocketChat->Receive((char*)&msg_recv, nBugLen);
@@ -367,7 +367,7 @@ int CMFCChatDlg::RecvMsg(void)
 	case ADD_FRIEND_REQUEST:
 		RecvAddFriendRequest((struct MSG_TRANSPOND*)&msg_recv);
 		break;
-	case GET_FRIEND_INFO_ALL:
+	case GET_ALL_FRIEND_INFO:
 		UpdateFriendInfo((MSG_FRND_INFO*)&msg_recv);
 		break;
 	default:
@@ -465,7 +465,11 @@ int CMFCChatDlg::SendMsg(void *msg, int nBufLen)
 {
 	if(m_pSocketChat == NULL)
 	{
-		SocketInit();
+		if(!SocketInit())
+		{// Socket初始化失败
+			return 0;
+		}
+
 	}
 
 	int nRes;
@@ -601,6 +605,7 @@ int CMFCChatDlg::LoginSuccess(MSG_USERINFO* msg_info)
 	//MessageBox(L"登陆成功！");
 	ShowWindow(SW_SHOW);
 	UpdateData(FALSE);
+	UpdateFriendInfo();
 	return 0;
 }
 
@@ -616,7 +621,7 @@ int CMFCChatDlg::LoginOut(void)
 {
 	struct MSG_LOGIN msg_lg;
 	msg_lg.nType = LOGIN_OUT;
-	msg_lg.nStatus = STATUS_OFFLINE;
+	msg_lg.nStatus = IDS_STATUS_OFFLINE;
 	size_t i;
 	wcstombs_s(&i, msg_lg.nID, m_csMyID, m_csMyID.GetLength() + 1);
 	SendMsg(&msg_lg, sizeof(msg_lg));
@@ -641,8 +646,12 @@ int CMFCChatDlg::SystemMessage(MSG_SYS* msg_sys)
 	switch(msg_sys->nIDPrompt)
 	{
 	case IDS_ADD_FRIEND_SUCCESS:
-		m_pAddFriendDlg->OnCancel();
-		m_pAddFriendDlg = NULL;
+		if(m_pAddFriendDlg)
+		{
+			m_pAddFriendDlg->OnCancel();
+			m_pAddFriendDlg = NULL;
+		}
+		UpdateFriendInfo();
 		break;
 	default:
 		break;
@@ -685,6 +694,7 @@ int CMFCChatDlg::RecvAddFriendRequest(struct MSG_TRANSPOND* msg_add)
 函数名称：UpdateFriendInfo
 功能描述：更新全部好友信息
 参数说明：msg_info-全部好友的ID、名字和状态
+创建日期：2016-08-07
 返 回 值：
 备    注：如果参数为空 则是向服务器发送请求消息
 *********************************************************/
@@ -692,11 +702,19 @@ int CMFCChatDlg::UpdateFriendInfo(MSG_FRND_INFO* msg_info)
 {
 	if(msg_info == NULL)
 	{
-		
+		msg_info = new MSG_FRND_INFO;
+		msg_info->nType = GET_ALL_FRIEND_INFO;
+		memset(msg_info->ListID, 0, ID_MAX * FRIEND_MAX);
+		memset(msg_info->ListName, 0, NAME_MAX * FRIEND_MAX);
+		SendMsg(msg_info, sizeof(*msg_info));
+		return FALSE;
 	}
 	
+	m_Friend.UpdateBasicInfo(msg_info);
 
-
+	m_Friend.ShowFriendInfo(&m_lstctlFriend);
+	
+	UpdateData(FALSE);
 
 	return 0;
 }
