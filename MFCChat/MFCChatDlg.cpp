@@ -189,6 +189,19 @@ void CMFCChatDlg::OnNMDblclkListFriend(NMHDR *pNMHDR, LRESULT *pResult)
 		}
 	}
 	*/
+
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	// TODO: 在此添加控件通知处理程序代码
+	*pResult = 0;
+
+	// 将指针转换为容易操作的结构类型
+	NMLISTVIEW *pNMListView = (NMLISTVIEW*)pNMHDR;
+
+	if(-1 != pNMListView->iItem) // 如果iItem不是-1，就说明有列表项被选择 
+	{
+		OpenChatDlg(pNMListView->iItem);
+	}
+
 }
 
 //添加好友
@@ -715,6 +728,81 @@ int CMFCChatDlg::UpdateFriendInfo(MSG_FRND_INFO* msg_info)
 	m_Friend.ShowFriendInfo(&m_lstctlFriend);
 	
 	UpdateData(FALSE);
+
+	return 0;
+}
+
+
+/*********************************************************
+函数名称：OpenChatDlg
+功能描述：打开聊天对话框
+参数说明：nItem-序号
+创建日期：2016-08-15
+返 回 值：
+*********************************************************/
+int CMFCChatDlg::OpenChatDlg(int nItem)
+{
+	char nID[ID_MAX];
+	m_Friend.GetItemID(nID, nItem);
+	char name[NAME_MAX];
+	m_Friend.GetFriendName(name, nID);
+
+	bool Flag = FALSE;
+	POSITION pos = m_listChatDlg.GetHeadPosition();
+	while(pos != NULL)
+	{
+		CChatDlg *p = m_listChatDlg.GetNext(pos);
+		if(!strcmp(nID, p->m_nID))
+		{
+			Flag = TRUE; // 聊天框已经存在
+			p->ShowWindow(SW_SHOWNORMAL);
+			break;
+		}
+	}
+
+	if(!Flag) // 聊天框不存在就创建一个
+	{
+		CChatDlg *pChatDlg = new CChatDlg(this);
+		strcpy_s(pChatDlg->m_nID, ID_MAX, nID); // 复制要在create之前执行 不然窗口标题会乱码
+		memcpy_s(pChatDlg->m_Name, NAME_MAX, name, NAME_MAX);	
+		pChatDlg->Create(IDD_CHAT_DLG, GetDesktopWindow());
+		pChatDlg->ShowWindow(SW_SHOW);		
+		m_listChatDlg.AddTail(pChatDlg);
+	}
+
+	return 0;
+}
+
+
+/*********************************************************
+函数名称：CloseChatDlg
+功能描述：关闭聊天对话框
+参数说明：nID-好友ID
+创建日期：2016-08-15
+返 回 值：
+*********************************************************/
+int CMFCChatDlg::CloseChatDlg(char* nID)
+{
+	POSITION pos = m_listChatDlg.GetHeadPosition();
+	while(pos != NULL)
+	{
+		CChatDlg *p = m_listChatDlg.GetNext(pos);
+		if(!strcmp(nID, p->m_nID))
+		{
+			if(pos == NULL)
+			{// 要删除的元素是最后一个
+				m_listChatDlg.RemoveTail();
+			}
+			else
+			{
+				m_listChatDlg.GetPrev(pos);
+				m_listChatDlg.RemoveAt(pos);	
+			}
+			break;
+		}
+	}
+
+
 
 	return 0;
 }

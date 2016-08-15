@@ -10,7 +10,7 @@ CFriendInfo::CFriendInfo()
 	m_Sex = '\0';
 	m_nStatus = IDS_ERR_USER_NOT_EXIST;
 	m_nAge = 0;
-	m_pChatDlg = NULL;
+	//m_pChatDlg = NULL;
 }
 CFriendInfo::~CFriendInfo()
 {
@@ -116,3 +116,92 @@ BOOL CFriend::IsExist(CFriendInfo** p,char* nID)const
 	return FALSE;
 }
 
+int CFriend::GetItemID(char* nID, int nItem)const
+{
+	ASSERT(nID);
+	CFriendInfo *p = NULL;
+	POSITION pos = m_friendlist.GetHeadPosition();
+	for(int i = -1; i != nItem; ++i)
+	{
+		p = m_friendlist.GetNext(pos);
+		if(p == NULL)
+		{
+			return -1;
+		}
+	}
+	strcpy_s(nID, ID_MAX, p->m_nID);
+	return 0;
+}
+
+int CFriend::GetFriendName(char* name, char* nID)const
+{
+	ASSERT(name && nID);
+	CFriendInfo *p = NULL;
+	if(IsExist(&p, nID))
+	{
+		memcpy(name, p->m_Name, NAME_MAX);
+	}
+	else
+	{
+		memset(name, 0, NAME_MAX);	
+	}
+	return 0;
+}
+/*
+int CFriend::SetChatDlg(CWnd** ppDlg, int nItem)
+{
+	CFriendInfo *p = NULL;
+	
+	POSITION pos = m_friendlist.GetHeadPosition();
+	for(int i = 0; i != nItem; ++i)
+	{
+		p = m_friendlist.GetNext(pos);
+		if(p == NULL)
+		{
+			//*ppDlg = NULL;
+			return 0;
+		}
+	}
+
+	p->m_pChatDlg = *ppDlg;
+
+	return 0;
+}
+
+int CFriend::GetChatDlg(CWnd** ppDlg, int nItem)const
+{	
+	CFriendInfo *p = NULL;
+	
+	POSITION pos = m_friendlist.GetHeadPosition();
+	
+	for(int i = -1; i != nItem; ++i)
+	{
+		p = m_friendlist.GetNext(pos);
+		if(p == NULL)
+		{
+			*ppDlg = NULL;
+			return 0;
+		}
+	}
+	*ppDlg = p->m_pChatDlg;
+
+	return 0;
+}
+
+int CFriend::InitChatDlg(char* nID)
+{
+	CFriendInfo *p = NULL;
+	if(IsExist(&p, nID))
+	{
+		p->m_pChatDlg = NULL;	
+	}
+
+	return 0;
+}
+
+int CFriend::OpenChatDlg(int nItem)
+{
+
+	return 0;
+}
+*/

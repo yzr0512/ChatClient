@@ -15,7 +15,7 @@
 IMPLEMENT_DYNAMIC(CChatDlg, CDialogEx)
 
 CChatDlg::CChatDlg(CWnd* pParent /*=NULL*/)
-	: CDialogEx(CChatDlg::IDD, NULL)
+	: CDialogEx(CChatDlg::IDD, pParent)
 	, m_pParentWnd(pParent)
 {
 	m_csInputMsg = _T("");
@@ -47,8 +47,10 @@ BOOL CChatDlg::OnInitDialog()
 	CDialogEx::OnInitDialog();
 
 	// TODO:  在此添加额外的初始化
-	SetWindowText(_T("Chatting with ") + m_csID);
-
+	CString csName;
+	csName = m_Name;
+	SetWindowText(_T("Chatting with ") + csName);
+	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常: OCX 属性页应返回 FALSE
 }
@@ -59,36 +61,12 @@ void CChatDlg::OnCancel()
 {
 	// TODO: 在此添加专用代码和/或调用基类
 	
-	// 多个窗口的方法
-	// 迭代器法删除容器中的元素
-	std::vector<CChatDlg*>& vecpChatDlg = ((CMFCChatDlg*)this->GetParent())->m_vecpChatDlg;
-	
-	std::vector<CChatDlg*>::iterator it = vecpChatDlg.begin();
+	((CMFCChatDlg*)m_pParentWnd)->CloseChatDlg(m_nID);
 
-
-	for(; it != vecpChatDlg.end(); ++it)
-	{
-		CChatDlg* pChatDlg = *it;
-
-		if(pChatDlg->m_csID == m_csID)
-		{
-			// 擦除容器中it指向的元素
-			vecpChatDlg.erase(it);	
-			
-			break;
-		}
-	}
 	// 删除窗口
 	DestroyWindow();
-
-	////此方法只能打开单个聊天窗口
-	//// 把父窗口中的m_pChatDlg置NULL
-	//((CMFCChatDlg*)this->GetParent())->m_pChatDlg = NULL;
-	//
-	//// 删除窗口
-	//DestroyWindow();
-
 }
+
 void CChatDlg::PostNcDestroy()
 {
 	// TODO: 在此添加专用代码和/或调用基类
@@ -147,6 +125,7 @@ void CChatDlg::OnBnClickedButtonSendMsg()
 	
 }
 
+
 // 输出信息
 int CChatDlg::AddMessage(const CString& csName, const CString& csTime, const CString& csMsg)
 {		
@@ -170,7 +149,6 @@ BOOL CChatDlg::PreTranslateMessage(MSG* pMsg)
 		{
 			OnBnClickedButtonSendMsg();
 		}
-
 	}
 	return CDialogEx::PreTranslateMessage(pMsg);
 }

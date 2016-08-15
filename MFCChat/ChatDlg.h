@@ -17,6 +17,9 @@ public:
 
 	CString m_csID;	// 对方的ID
 
+	char m_nID[ID_MAX];
+	char m_Name[NAME_MAX];
+
 	// 在Output编辑框中添加消息
 	int AddMessage(const CString& csName, const CString& csTime, const CString& csMsg);
 

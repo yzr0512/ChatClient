@@ -163,11 +163,6 @@ typedef struct MSG_FRND_INFO
 	char ListName[FRIEND_MAX][NAME_MAX];
 }MSG_FRND_INFO;
 
-// 好友信息
-struct msg_friend
-{
-	int  nType; // GET_FRIEND_LIST
-	int  nStatus; // 在线状态
-	char ID[ID_MAX]; // ID
-	char Name[NAME_MAX]; // 昵称
-};
+
+
+
