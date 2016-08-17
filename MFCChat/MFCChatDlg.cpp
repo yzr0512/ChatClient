@@ -134,7 +134,7 @@ HCURSOR CMFCChatDlg::OnQueryDragIcon()
 }
 
 
-//双击好友时打开聊天窗口
+//双击好友列表事件
 void CMFCChatDlg::OnNMDblclkListFriend(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	/*
@@ -204,7 +204,7 @@ void CMFCChatDlg::OnNMDblclkListFriend(NMHDR *pNMHDR, LRESULT *pResult)
 
 }
 
-//添加好友
+//按钮：添加好友
 void CMFCChatDlg::OnBnClickedButtonAddFriendDlg()
 {
 	// TODO: 在此添加控件通知处理程序代码
@@ -241,6 +241,7 @@ int CMFCChatDlg::InitListCtrlStyle(void)
 
 	return 0;
 }
+
 
 // 更新好友列表数据	
 int CMFCChatDlg::RefreshListCtrlData(void)
@@ -387,89 +388,6 @@ int CMFCChatDlg::RecvMsg(void)
 		break;
 	}
 
-/*
-	if(msg_recv.nType == LOGIN_SUCCESS) // 登录成功
-	{
-		UpdateData(TRUE);
-		m_csMyID = m_dlgLogin.m_csID;		
-		m_dlgLogin.EndDialog(LOGIN_SUCCESS);
-		return 0;
-	}
-
-	if(msg_recv.nType == LOGIN_FAILED) // 登录失败
-	{
-		CString strMsg;
-		strMsg.Format(_T("%s"), msg_recv.Data);
-		MessageBox(strMsg);
-		return 0;
-	}
-
-	if(msg_recv.nType == CHATING_TEXT_MSG) // 聊天消息
-	{
-		struct MSG_TRANSPOND *chatmsg;
-		chatmsg = (MSG_TRANSPOND *)&msg_recv;
-
-		m_listChatMsg.AddTail(chatmsg);
-		
-		RefreshChatDlgMsg();
-		RefreshListCtrlData();
-		
-		return 0;
-	}
-*/
-/*
-	if(msg_recv.nType == GET_FRIEND_NUM) // 更新全部好友信息
-	{
-		// 服务器先传一个消息 告诉我们有多少个好友
-		int total = ((struct msg_friend_num*)&msg_recv)->nTotal;
-		for(int i = 0; i != total; ++i)
-		{
-			nRes = m_pSocketChat->Receive((char*)&msg_recv, nBugLen);
-			// 好像不能这样写
-
-			InitFriendInfo((struct msg_friend*)&msg_recv);
-		}
-		return 0;
-	
-	}
-*/
-	/*
-	if(msg_recv.nType == GET_STRANGER_INFO) // 陌生人信息 添加好友对话框
-	{
-		m_pAddFriendDlg->RefreshListCtrlData((struct msg_friend*)&msg_recv);
-		return 0;
-	}
-	*/
-/*
-	if(msg_recv.nType == ADD_FRIEND_SUCCESS) // 好友添加成功
-	{
-		struct msg_friend * pMsgFriend = (struct msg_friend*)&msg_recv;		
-		class CFriendInfo friendinfo;
-		friendinfo.csID.Format(_T("%s"), pMsgFriend->ID); // ID
-		friendinfo.csName.Format(_T("%s"), pMsgFriend->Name);// 名字
-		friendinfo.nStatus = pMsgFriend->nStatus; // 在线状态
-		friendinfo.num = m_listFriendInfo.GetCount(); // 序号
-		m_listFriendInfo.AddTail(&friendinfo); // 添加到链表
-		
-		RefreshListCtrlData(); // 更新到控件
-
-		MessageBox(_T("添加成功！"));
-
-		m_pAddFriendDlg->EndDialog(2);
-
-		return 0;
-	}
-*/
-	/*
-	if(msg_recv.nType == ADD_FRIEND_FAILED) // 好友添加失败
-	{
-		CString csMsg;
-		csMsg.Format(_T("%s"),msg_recv.Data);
-		
-		MessageBox(csMsg);
-		return 0;
-	}
-	*/
 	return 0;
 }
 
@@ -482,7 +400,6 @@ int CMFCChatDlg::SendMsg(void *msg, int nBufLen)
 		{// Socket初始化失败
 			return 0;
 		}
-
 	}
 
 	int nRes;
@@ -497,6 +414,7 @@ int CMFCChatDlg::SendMsg(void *msg, int nBufLen)
 // 刷新聊天窗口的消息
 int CMFCChatDlg::RefreshChatDlgMsg(void)
 {
+	/*
 	// 遍历第一次
 	//   如果聊天窗口已打开 则将消息输出到聊天窗口
 	POSITION pos = m_listChatMsg.GetHeadPosition();
@@ -510,7 +428,7 @@ int CMFCChatDlg::RefreshChatDlgMsg(void)
 		csFormID.Format(_T("%s"), pChatMsg->FromID);
 		for each(auto p in m_vecpChatDlg)
 		{
-			if(csFormID == p->m_csID) // 与该ID的聊天对话框已经打开
+			if(csFormID == p->m_csID) // 与该ID的聊天对话框已经打开			
 			{
 				nFlag = 1;
 				CString csMsg, csDate, csTime;
@@ -540,6 +458,58 @@ int CMFCChatDlg::RefreshChatDlgMsg(void)
 
 			}
 		}		
+	}
+	// 刷新列表控件里面的信息
+	RefreshListCtrlData();
+	*/
+
+	// 遍历第一次
+	//   如果聊天窗口已打开 则将消息输出到聊天窗口
+	
+	int nFlag = 0;	
+	POSITION posMsg = m_listChatMsg.GetHeadPosition();
+	while(posMsg != NULL)
+	{
+		struct MSG_TRANSPOND *pChatMsg = m_listChatMsg.GetNext(posMsg); // 返回当前位置的元素 并将pos指向下一个元素			
+		CString csFormID;
+		csFromID = pChatMsg->FromID;
+		POSITION posDlg = m_listChatDlg.GetHeadPosition();
+		while(posDlg != NULL)
+		{
+			CChatDlg *pChatDlg = m_listChatDlg.GetNext(posDlg);
+			if(!strcmp(pChatDlg->m_nID, pChatMsg->FromID))
+			{
+				nFlag = 1;
+				CString csMsg, csDate, csTime;			
+				csMsg.Format(_T("%s"), pChatMsg->Data);
+				csDate = pChatMsg->Date;
+				csTime = pChatMsg->Time;
+				CTime tm = CTime::GetCurrentTime();
+				if(tm.Format(_T("%Y-%m-%d")) == csDate)
+				{	
+					// 当天接收
+					pChatDlg->AddMessage(csFromID, csTime, csMsg);
+				}
+				else
+				{
+					// 隔天接收
+					pChatDlg->AddMessage(csFromID, csDate + " " + csTime, csMsg);
+				}
+
+				if(posMsg != NULL)
+				{
+					POSITION posMsgTemp = posMsg;
+					m_listChatMsg.GetPrev(posMsgTemp); //将pos1指向当前元素
+					m_listChatMsg.RemoveAt(posMsgTemp); //从消息中移除
+				}
+				else
+				{
+					m_listChatMsg.RemoveTail();
+				}
+
+				//delete pChatMsg; // 释放结构体占用的内存 *出错*	
+			}
+		}				
 	}
 	// 刷新列表控件里面的信息
 	RefreshListCtrlData();
@@ -573,6 +543,7 @@ int CMFCChatDlg::InitFriendInfo(struct msg_friend *pMsgFriend)
 	return 0;
 }
 
+// 删除好友
 void CMFCChatDlg::OnBnClickedBtDelFriend()
 {
 	// TODO: 在此添加控件通知处理程序代码

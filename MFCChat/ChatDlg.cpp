@@ -77,67 +77,6 @@ void CChatDlg::PostNcDestroy()
 	CDialogEx::PostNcDestroy();
 }
 
-
-void CChatDlg::OnBnClickedButtonSendMsg()
-{
-	// TODO: 在此添加控件通知处理程序代码
-	UpdateData(TRUE);
-	if(m_csInputMsg == "") // 编辑框中未输入内容
-	{
-		// 气泡提示：编辑框的内容不能为空
-		// 
-	}
-	
-	struct MSG_TRANSPOND chatmsg;
-	chatmsg.nType = CHATING_TEXT_MSG;
-	
-	memset(chatmsg.ToID, '\0', sizeof(chatmsg.ToID));
-	memset(chatmsg.FromID, '\0', sizeof(chatmsg.FromID));
-	memset(chatmsg.Date, '\0', sizeof(chatmsg.Date));
-	memset(chatmsg.Time, '\0', sizeof(chatmsg.Time));
-	memset(chatmsg.Data, '\0', sizeof(chatmsg.Data));
-	
-	CString csMyID; // 我的ID
-	csMyID = ((CMFCChatDlg*)m_pParentWnd)->m_csMyID;
-
-	CTime tm = CTime::GetCurrentTime(); // 现在时间
-	CString csDate = tm.Format("%Y-%m-%d");
-	CString csTime = tm.Format("%H:%M:%S");	
-
-	memcpy(chatmsg.ToID, m_csID, m_csID.GetLength() * 2);
-	memcpy(chatmsg.FromID, csMyID, csMyID.GetLength() * 2);
-	memcpy(chatmsg.Date, csDate, csDate.GetLength() * 2);
-	memcpy(chatmsg.Time, csTime, csTime.GetLength() * 2);
-	memcpy(chatmsg.Data, m_csInputMsg, m_csInputMsg.GetLength() * 2);
-	
-	// 发送消息
-	
-	if(((CMFCChatDlg*)m_pParentWnd)->SendMsg(&chatmsg, sizeof(chatmsg)))
-	{
-		// 发送成功后 显示我发的内容
-		AddMessage(_T("我： "), csTime, m_csInputMsg);
-		// 清空输入框的内容
-		m_csInputMsg = "";
-	}
-
-	// 将信息更新到屏幕
-	UpdateData(FALSE);
-	
-}
-
-
-// 输出信息
-int CChatDlg::AddMessage(const CString& csName, const CString& csTime, const CString& csMsg)
-{		
-		m_csOutputMsg += csName;
-		m_csOutputMsg += csTime;
-		m_csOutputMsg += "\r\n";
-		m_csOutputMsg += csMsg;
-		m_csOutputMsg += "\r\n";
-		UpdateData(FALSE);
-		return 0;
-}
-
 // 此处可设置快捷键
 BOOL CChatDlg::PreTranslateMessage(MSG* pMsg)
 {
@@ -151,5 +90,90 @@ BOOL CChatDlg::PreTranslateMessage(MSG* pMsg)
 		}
 	}
 	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+
+// 发送消息
+void CChatDlg::OnBnClickedButtonSendMsg()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+	if(m_csInputMsg == "") // 编辑框中未输入内容
+	{
+		// 气泡提示：编辑框的内容不能为空
+		// 
+		return;
+	}
+	
+	struct MSG_TRANSPOND msg_chat;
+	msg_chat.nType = CHATING_TEXT_MSG;
+
+	CString csMyID; // 我的ID
+	csMyID = ((CMFCChatDlg*)m_pParentWnd)->m_csMyID;
+
+	CTime tm = CTime::GetCurrentTime(); // 现在时间
+	CString csDate = tm.Format("%Y-%m-%d");
+	CString csTime = tm.Format("%H:%M:%S");	
+	
+	memcpy(msg_chat.ToID, m_nID, ID_MAX);
+	memcpy(msg_chat.Data, m_csInputMsg, m_csInputMsg.GetLength() * 2 + 2);
+	wcstombs(msg_chat.FromID, csMyID, csMyID.GetLength() + 1);
+	wcstombs(msg_chat.Date, csDate, csDate.GetLength() + 1);
+	wcstombs(msg_chat.Time, csTime, csTime.GetLength() + 1);
+
+	/*
+	memset(msg_chat.ToID, '\0', sizeof(msg_chat.ToID));
+	memset(msg_chat.FromID, '\0', sizeof(msg_chat.FromID));
+	memset(msg_chat.Date, '\0', sizeof(msg_chat.Date));
+	memset(msg_chat.Time, '\0', sizeof(msg_chat.Time));
+	memset(msg_chat.Data, '\0', sizeof(msg_chat.Data));
+	
+	CString csMyID; // 我的ID
+	csMyID = ((CMFCChatDlg*)m_pParentWnd)->m_csMyID;
+
+	CTime tm = CTime::GetCurrentTime(); // 现在时间
+	CString csDate = tm.Format("%Y-%m-%d");
+	CString csTime = tm.Format("%H:%M:%S");	
+
+	memcpy(msg_chat.ToID, m_csID, m_csID.GetLength() * 2);
+	memcpy(msg_chat.FromID, csMyID, csMyID.GetLength() * 2);
+	memcpy(msg_chat.Date, csDate, csDate.GetLength() * 2);
+	memcpy(msg_chat.Time, csTime, csTime.GetLength() * 2);
+	memcpy(msg_chat.Data, m_csInputMsg, m_csInputMsg.GetLength() * 2);
+	*/
+	// 发送消息
+	
+	if(((CMFCChatDlg*)m_pParentWnd)->SendMsg(&msg_chat, sizeof(msg_chat)))
+	{
+		// 发送成功后 显示我发的内容
+		AddMessage(_T("我"), csTime, m_csInputMsg);
+		// 清空输入框的内容
+		m_csInputMsg = "";
+	}
+
+	// 将信息更新到屏幕
+	UpdateData(FALSE);
+	
+}
+
+
+// 输出信息
+int CChatDlg::AddMessage(const CString& csName, const CString& csTime, const CString& csMsg)
+{	
+	// 如果传进来的csName是好友的ID 则将ID换成名字
+	CString csTemp;
+	csTemp = m_nID;
+	if(csTemp == csName)	
+		csTemp = m_Name;			
+	else
+		csTemp = csName;
+	m_csOutputMsg += csTemp;
+	m_csOutputMsg += ": ";
+	m_csOutputMsg += csTime;
+	m_csOutputMsg += "\r\n";
+	m_csOutputMsg += csMsg;
+	m_csOutputMsg += "\r\n";
+	UpdateData(FALSE);
+	return 0;
 }
 
