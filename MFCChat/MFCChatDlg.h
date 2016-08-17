@@ -77,10 +77,8 @@ protected:
 	CLoginDlg m_dlgLogin; // 登录窗口	
 	CChatSocket* m_pSocketChat; // 与服务器通信的socket指针	
 	
-	CList<struct MSG_TRANSPOND*, struct MSG_TRANSPOND*> m_listChatMsg; // 待阅读的聊天消息列表	
+	CList<struct MSG_TRANSPOND*, struct MSG_TRANSPOND*> m_listChatMsg; // 待阅读的聊天消息列表
 	CList<CChatDlg*, CChatDlg*> m_listChatDlg; // 聊天窗口链表
-
-	//CList<class CFriendInfo*, class CFriendInfo*> m_listFriendInfo; // 好友信息列表
 
 	int InitListCtrlStyle(void); // 初始化好友列表	
 	int RefreshListCtrlData(void); // 更新好友列表数据	

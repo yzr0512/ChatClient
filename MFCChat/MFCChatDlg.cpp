@@ -290,8 +290,11 @@ int CMFCChatDlg::RefreshListCtrlData(void)
 	
 	}
 */
+	m_Friend.ShowFriendInfo(&m_lstctlFriend);
+
 	return 0;
 }
+
 
 
 /*********************************************************
@@ -342,30 +345,31 @@ bool CMFCChatDlg::SocketInit(void)
 int CMFCChatDlg::RecvMsg(void)
 {
 	int nBugLen = 4096;
-	struct MSG_T msg_recv; // 接收到的数据
+	struct MSG_T *msg_recv = new struct MSG_T; // 接收到的数据
 	int nRes; // 接收到的字节数
-	nRes = m_pSocketChat->Receive((char*)&msg_recv, nBugLen);
+	nRes = m_pSocketChat->Receive((char*)msg_recv, nBugLen);
 
 	if(nRes == 0) // 没有接收到数据
 	{
 		return 0;
 	}
 	
-	switch(msg_recv.nType)
+	switch(msg_recv->nType)
 	{
 	case LOGIN_SUCCESS: // 登录成功
-		LoginSuccess((struct MSG_USERINFO*)&msg_recv);
+		LoginSuccess((struct MSG_USERINFO*)msg_recv);
 		break;	
 	case CHATING_TEXT_MSG:
 		struct MSG_TRANSPOND *chatmsg;
-		chatmsg = (MSG_TRANSPOND *)&msg_recv;
-		m_listChatMsg.AddTail(chatmsg);		
+		chatmsg = (MSG_TRANSPOND *)msg_recv;
+		m_listChatMsg.AddTail(chatmsg);	
+		m_Friend.SetIsHaveMsg(chatmsg->FromID, TRUE);
 		RefreshChatDlgMsg();
-		RefreshListCtrlData();
+		//RefreshListCtrlData();
 		break;
 	case REGISTER_SUCCESS:
 		//m_dlgLogin.m_dlgRegist.RegisterSuccess((struct MSG_REGISTER*)&msg_recv);
-		m_pLoginDlg->m_pRegDlg->RegisterSuccess((struct MSG_REGISTER*)&msg_recv);
+		m_pLoginDlg->m_pRegDlg->RegisterSuccess((struct MSG_REGISTER*)msg_recv);
 		break;
 	case REGISTER_FAILED: // 注册失败
 		/*CString csMsg;
@@ -373,16 +377,16 @@ int CMFCChatDlg::RecvMsg(void)
 		MessageBox(csMsg);*/
 		break;
 	case IDS_SYSTEM_MESSAGE: // 系统消息
-		SystemMessage((struct MSG_SYS*)&msg_recv);
+		SystemMessage((struct MSG_SYS*)msg_recv);
 		break;
 	case GET_STRANGER_INFO:
-		m_pAddFriendDlg->ShowStrangerInfo((struct MSG_USERINFO *)&msg_recv);
+		m_pAddFriendDlg->ShowStrangerInfo((struct MSG_USERINFO *)msg_recv);
 		break;
 	case ADD_FRIEND_REQUEST:
-		RecvAddFriendRequest((struct MSG_TRANSPOND*)&msg_recv);
+		RecvAddFriendRequest((struct MSG_TRANSPOND*)msg_recv);
 		break;
 	case GET_ALL_FRIEND_INFO:
-		UpdateFriendInfo((MSG_FRND_INFO*)&msg_recv);
+		UpdateFriendInfo((MSG_FRND_INFO*)msg_recv);
 		break;
 	default:
 		break;
@@ -414,55 +418,6 @@ int CMFCChatDlg::SendMsg(void *msg, int nBufLen)
 // 刷新聊天窗口的消息
 int CMFCChatDlg::RefreshChatDlgMsg(void)
 {
-	/*
-	// 遍历第一次
-	//   如果聊天窗口已打开 则将消息输出到聊天窗口
-	POSITION pos = m_listChatMsg.GetHeadPosition();
-	struct MSG_TRANSPOND *pChatMsg;
-
-	int nFlag = 0;
-	while(pos != NULL)
-	{
-		pChatMsg = m_listChatMsg.GetNext(pos); // 返回当前位置的元素 并将pos指向下一个元素
-		CString csFormID;
-		csFormID.Format(_T("%s"), pChatMsg->FromID);
-		for each(auto p in m_vecpChatDlg)
-		{
-			if(csFormID == p->m_csID) // 与该ID的聊天对话框已经打开			
-			{
-				nFlag = 1;
-				CString csMsg, csDate, csTime;
-			
-				csMsg.Format(_T("%s"), pChatMsg->Data);
-				csDate.Format(_T("%s"), pChatMsg->Date);
-				csTime.Format(_T("%s"), pChatMsg->Time);
-				CTime tm = CTime::GetCurrentTime();
-				if(tm.Format(_T("%Y-%m-%d")) == csDate)
-				{	
-					// 当天接收
-					p->AddMessage(csFormID, csTime, csMsg);
-				}
-				else
-				{
-					// 隔天接收
-					p->AddMessage(csFormID, csDate + " " + csTime, csMsg);
-				}
-				
-				POSITION pos1 = pos;
-
-				delete pChatMsg; // 释放结构体占用的内存
-				m_listChatMsg.GetPrev(pos1); //将pos1指向当前元素
-				m_listChatMsg.RemoveAt(pos1); //从消息中移除
-				// 删除元素之后 要重新遍历一遍 或者break 或者 用临时变量pos1解决
-				//pos = m_listChatMsg.GetHeadPosition();
-
-			}
-		}		
-	}
-	// 刷新列表控件里面的信息
-	RefreshListCtrlData();
-	*/
-
 	// 遍历第一次
 	//   如果聊天窗口已打开 则将消息输出到聊天窗口
 	
@@ -471,7 +426,7 @@ int CMFCChatDlg::RefreshChatDlgMsg(void)
 	while(posMsg != NULL)
 	{
 		struct MSG_TRANSPOND *pChatMsg = m_listChatMsg.GetNext(posMsg); // 返回当前位置的元素 并将pos指向下一个元素			
-		CString csFormID;
+		CString csFromID;
 		csFromID = pChatMsg->FromID;
 		POSITION posDlg = m_listChatDlg.GetHeadPosition();
 		while(posDlg != NULL)
@@ -511,6 +466,15 @@ int CMFCChatDlg::RefreshChatDlgMsg(void)
 			}
 		}				
 	}
+
+	m_Friend.InitIsHaveMsg();
+	posMsg = m_listChatMsg.GetHeadPosition();
+	while(posMsg != NULL)
+	{
+		struct MSG_TRANSPOND *pChatMsg = m_listChatMsg.GetNext(posMsg);
+		m_Friend.SetIsHaveMsg(pChatMsg->FromID, TRUE);
+	}
+
 	// 刷新列表控件里面的信息
 	RefreshListCtrlData();
 
@@ -739,6 +703,7 @@ int CMFCChatDlg::OpenChatDlg(int nItem)
 		pChatDlg->Create(IDD_CHAT_DLG, GetDesktopWindow());
 		pChatDlg->ShowWindow(SW_SHOW);		
 		m_listChatDlg.AddTail(pChatDlg);
+		RefreshChatDlgMsg();
 	}
 
 	return 0;

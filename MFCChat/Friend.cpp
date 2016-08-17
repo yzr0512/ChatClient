@@ -10,13 +10,12 @@ CFriendInfo::CFriendInfo()
 	m_Sex = '\0';
 	m_nStatus = IDS_ERR_USER_NOT_EXIST;
 	m_nAge = 0;
-	//m_pChatDlg = NULL;
+	m_bIsHaveMsg = FALSE;
 }
 CFriendInfo::~CFriendInfo()
 {
 	
 }
-
 
 
 CFriend::CFriend(void)
@@ -92,6 +91,10 @@ int CFriend::ShowFriendInfo(CListCtrl * pListCtrl)const
 		//strTemp = pinfo->nID;	// nID是多字符
 		//pListCtrl->InsertItem(i, strTemp);
 		strTemp = (LPCTSTR)pinfo->m_Name; // 昵称是以宽字符来储存
+		if(pinfo->m_bIsHaveMsg)
+		{
+			strTemp += " 有新的消息！";
+		}
 		pListCtrl->InsertItem(i, strTemp);		
 		strTemp.LoadStringW(pinfo->m_nStatus);// 状态是数字
 		pListCtrl->SetItemText(i, 1, strTemp);
@@ -116,6 +119,7 @@ BOOL CFriend::IsExist(CFriendInfo** p,char* nID)const
 	return FALSE;
 }
 
+
 int CFriend::GetItemID(char* nID, int nItem)const
 {
 	ASSERT(nID);
@@ -133,6 +137,7 @@ int CFriend::GetItemID(char* nID, int nItem)const
 	return 0;
 }
 
+
 int CFriend::GetFriendName(char* name, char* nID)const
 {
 	ASSERT(name && nID);
@@ -147,61 +152,27 @@ int CFriend::GetFriendName(char* name, char* nID)const
 	}
 	return 0;
 }
-/*
-int CFriend::SetChatDlg(CWnd** ppDlg, int nItem)
+
+
+int CFriend::InitIsHaveMsg()
 {
-	CFriendInfo *p = NULL;
-	
 	POSITION pos = m_friendlist.GetHeadPosition();
-	for(int i = 0; i != nItem; ++i)
+	while(pos != NULL)
 	{
-		p = m_friendlist.GetNext(pos);
-		if(p == NULL)
-		{
-			//*ppDlg = NULL;
-			return 0;
-		}
+		CFriendInfo *p = m_friendlist.GetNext(pos);
+		p->m_bIsHaveMsg = FALSE;
 	}
-
-	p->m_pChatDlg = *ppDlg;
-
 	return 0;
 }
 
-int CFriend::GetChatDlg(CWnd** ppDlg, int nItem)const
-{	
-	CFriendInfo *p = NULL;
-	
-	POSITION pos = m_friendlist.GetHeadPosition();
-	
-	for(int i = -1; i != nItem; ++i)
-	{
-		p = m_friendlist.GetNext(pos);
-		if(p == NULL)
-		{
-			*ppDlg = NULL;
-			return 0;
-		}
-	}
-	*ppDlg = p->m_pChatDlg;
 
-	return 0;
-}
-
-int CFriend::InitChatDlg(char* nID)
+int CFriend::SetIsHaveMsg(char* nID, bool status)
 {
 	CFriendInfo *p = NULL;
 	if(IsExist(&p, nID))
 	{
-		p->m_pChatDlg = NULL;	
+		p->m_bIsHaveMsg = status;
 	}
-
 	return 0;
 }
 
-int CFriend::OpenChatDlg(int nItem)
-{
-
-	return 0;
-}
-*/

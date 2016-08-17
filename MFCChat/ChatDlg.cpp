@@ -48,7 +48,7 @@ BOOL CChatDlg::OnInitDialog()
 
 	// TODO:  在此添加额外的初始化
 	CString csName;
-	csName = m_Name;
+	csName.Format(L"%s", m_Name);
 	SetWindowText(_T("Chatting with ") + csName);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -164,7 +164,7 @@ int CChatDlg::AddMessage(const CString& csName, const CString& csTime, const CSt
 	CString csTemp;
 	csTemp = m_nID;
 	if(csTemp == csName)	
-		csTemp = m_Name;			
+		csTemp.Format(L"%s", m_Name);			
 	else
 		csTemp = csName;
 	m_csOutputMsg += csTemp;
