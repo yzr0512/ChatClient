@@ -27,7 +27,13 @@ CFriend::~CFriend(void)
 {
 }
 
-
+/*********************************************************
+函数名称：UpdateBasicInfo
+功能描述：更新好友的基本信息（ID，姓名，状态）
+创建时间：2016-08-07
+参数说明：
+返 回 值：
+*********************************************************/
 int CFriend::UpdateBasicInfo(MSG_FRND_INFO* msg_info)
 {
 	if(msg_info == NULL)
@@ -55,6 +61,13 @@ int CFriend::UpdateBasicInfo(MSG_FRND_INFO* msg_info)
 }
 
 
+/*********************************************************
+函数名称：ShowFriendInfo
+功能描述：显示好友的基本信息（ID，姓名，状态）
+创建时间：2016-08-07
+参数说明：pListCtrl-列表控件指针
+返 回 值：
+*********************************************************/
 int CFriend::ShowFriendInfo(CListCtrl * pListCtrl)const
 {
 	// 删除所有行
@@ -105,6 +118,13 @@ int CFriend::ShowFriendInfo(CListCtrl * pListCtrl)const
 }
 
 
+/*********************************************************
+函数名称：IsExist
+功能描述：检查ID是否存在 存在返回该ID的信息
+创建时间：2016-08-07
+参数说明：p-指向好友信息指针的指针 nID-账号ID
+返 回 值：
+*********************************************************/
 BOOL CFriend::IsExist(CFriendInfo** p,char* nID)const
 {
 	POSITION pos = m_friendlist.GetHeadPosition();
@@ -120,6 +140,13 @@ BOOL CFriend::IsExist(CFriendInfo** p,char* nID)const
 }
 
 
+/*********************************************************
+函数名称：GetItemID
+功能描述：获得第nItem个好友的ID
+创建时间：2016-08-15
+参数说明：nID-账号ID nItem-序号
+返 回 值：
+*********************************************************/
 int CFriend::GetItemID(char* nID, int nItem)const
 {
 	ASSERT(nID);
@@ -138,6 +165,13 @@ int CFriend::GetItemID(char* nID, int nItem)const
 }
 
 
+/*********************************************************
+函数名称：GetFriendName
+功能描述：获得nID的Name
+创建时间：2016-08-15
+参数说明：name-名字 nID-账号
+返 回 值：
+*********************************************************/
 int CFriend::GetFriendName(char* name, char* nID)const
 {
 	ASSERT(name && nID);
@@ -154,6 +188,13 @@ int CFriend::GetFriendName(char* name, char* nID)const
 }
 
 
+/*********************************************************
+函数名称：InitIsHaveMsg
+功能描述：初始化成员变量m_bIsHaveMsg 全部设置为FALSE
+创建时间：2016-08-15
+参数说明：
+返 回 值：
+*********************************************************/
 int CFriend::InitIsHaveMsg()
 {
 	POSITION pos = m_friendlist.GetHeadPosition();
@@ -166,6 +207,13 @@ int CFriend::InitIsHaveMsg()
 }
 
 
+/*********************************************************
+函数名称：SetIsHaveMsg
+功能描述：设置某个ID的m_bIsHaveMsg
+创建时间：2016-08-15
+参数说明：
+返 回 值：
+*********************************************************/
 int CFriend::SetIsHaveMsg(char* nID, bool status)
 {
 	CFriendInfo *p = NULL;

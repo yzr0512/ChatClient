@@ -14,28 +14,24 @@ public:
 // 对话框数据
 	enum { IDD = IDD_CHAT_DLG };
 
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
+	
+	DECLARE_MESSAGE_MAP()
 
+public:
+	virtual BOOL OnInitDialog();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	virtual void OnCancel();
+	virtual void PostNcDestroy();
+	afx_msg void OnBnClickedButtonSendMsg();
+	
 	CString m_csID;	// 对方的ID
-
 	char m_nID[ID_MAX];
 	char m_Name[NAME_MAX];
 
 	// 在Output编辑框中添加消息
 	int AddMessage(const CString& csName, const CString& csTime, const CString& csMsg);
-
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
-	
-	DECLARE_MESSAGE_MAP()
-public:
-	virtual BOOL OnInitDialog();
-
-	virtual void OnCancel();
-	virtual void PostNcDestroy();
-	afx_msg void OnBnClickedButtonSendMsg();
-
-
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 protected:	
 	CString m_csInputMsg; // 输入的内容

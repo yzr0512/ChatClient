@@ -72,6 +72,10 @@ public:
 	int CloseChatDlg(char* nID);
 
 protected:	
+	int RefreshListCtrlData(void); // 更新好友列表数据	
+	int RefreshChatDlgMsg(void); // 刷新聊天窗口的消息	
+	int InitFriendInfo(struct msg_friend *pMsgFriend = NULL);
+	
 	CComboBox m_cbState; // 在线状态控件
 	CListCtrl m_lstctlFriend; // 好友列表视图控件
 	CLoginDlg m_dlgLogin; // 登录窗口	
@@ -80,10 +84,5 @@ protected:
 	CList<struct MSG_TRANSPOND*, struct MSG_TRANSPOND*> m_listChatMsg; // 待阅读的聊天消息列表
 	CList<CChatDlg*, CChatDlg*> m_listChatDlg; // 聊天窗口链表
 
-	int InitListCtrlStyle(void); // 初始化好友列表	
-	int RefreshListCtrlData(void); // 更新好友列表数据	
-	int RefreshChatDlgMsg(void); // 刷新聊天窗口的消息	
-	int InitFriendInfo(struct msg_friend *pMsgFriend = NULL);
-	
 };
 

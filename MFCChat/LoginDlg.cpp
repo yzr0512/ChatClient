@@ -55,9 +55,6 @@ END_MESSAGE_MAP()
 *********************************************************/
 void CLoginDlg::OnBnClickedButtonLogin()
 {
-	
-
-
 	//更新变量的数据
 	UpdateData(TRUE);
 	

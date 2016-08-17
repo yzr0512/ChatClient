@@ -55,6 +55,7 @@ BOOL CChatDlg::OnInitDialog()
 	// 异常: OCX 属性页应返回 FALSE
 }
 
+
 // 关闭聊天窗口时同时删除主窗口中的元素
 // 需要重载OnCancel()和PostNcDestroy()
 void CChatDlg::OnCancel()
@@ -66,7 +67,6 @@ void CChatDlg::OnCancel()
 	// 删除窗口
 	DestroyWindow();
 }
-
 void CChatDlg::PostNcDestroy()
 {
 	// TODO: 在此添加专用代码和/或调用基类
@@ -76,6 +76,7 @@ void CChatDlg::PostNcDestroy()
 
 	CDialogEx::PostNcDestroy();
 }
+
 
 // 此处可设置快捷键
 BOOL CChatDlg::PreTranslateMessage(MSG* pMsg)
@@ -93,7 +94,12 @@ BOOL CChatDlg::PreTranslateMessage(MSG* pMsg)
 }
 
 
-// 发送消息
+/*********************************************************
+函数名称：OnBnClickedButtonSendMsg
+功能描述：发送信息
+创建时间：2016-08-17
+备    注：
+*********************************************************/
 void CChatDlg::OnBnClickedButtonSendMsg()
 {
 	// TODO: 在此添加控件通知处理程序代码
@@ -157,7 +163,12 @@ void CChatDlg::OnBnClickedButtonSendMsg()
 }
 
 
-// 输出信息
+/*********************************************************
+函数名称：AddMessage
+功能描述：在编辑框添加信息
+创建时间：2016-08-15
+备    注：
+*********************************************************/
 int CChatDlg::AddMessage(const CString& csName, const CString& csTime, const CString& csMsg)
 {	
 	// 如果传进来的csName是好友的ID 则将ID换成名字

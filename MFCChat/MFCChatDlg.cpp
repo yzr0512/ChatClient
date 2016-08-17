@@ -58,34 +58,23 @@ BOOL CMFCChatDlg::OnInitDialog()
 
 	// TODO: 在此添加额外的初始化代码
 	
-	//SocketInit(); // 初始化Socket
-	
 	// 打开登录窗口
-	// 如果登陆窗口返回2，表示登陆窗口只是被关闭 主窗口也关闭	
 	if(m_pLoginDlg == NULL)
 	{
-		m_pLoginDlg = new CLoginDlg(this);
+		m_pLoginDlg = new CLoginDlg(this);	
 		m_pLoginDlg->Create(IDD_LOGIN_DLG);
+		m_pLoginDlg->CenterWindow(); // 登陆窗口居中显示
 		m_pLoginDlg->ShowWindow(SW_SHOW);
 	}
-	ShowWindow(SW_SHOW);
-	/*
-	int nRes;	
-	nRes = m_dlgLogin.DoModal();
-	if (nRes != LOGIN_SUCCESS)
-	{	
-		EndDialog(2);
-	}
+	//ShowWindow(SW_SHOW);
+	CenterWindow(); // 主窗口居中
 	
 	UpdateData(TRUE);
+	
 	// 显示用户名
 	m_csMyName = m_dlgLogin.m_csID;
-	*/
-
-	// 好友列表
-	//  设置列表的格式
-	InitListCtrlStyle();
-	//  更新列表的数据
+	
+	// 更新好友列表的数据
 	RefreshListCtrlData();
 
 	// 设置在线状态
@@ -134,62 +123,31 @@ HCURSOR CMFCChatDlg::OnQueryDragIcon()
 }
 
 
+
+// 对话框关闭时调用下面两个函数
+void CMFCChatDlg::OnCancel()
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	if(m_csMyID != "")
+	{
+		LoginOut();
+	}
+	DestroyWindow();
+	//CDialogEx::OnCancel();
+}
+void CMFCChatDlg::PostNcDestroy()
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	delete this;
+	CDialogEx::PostNcDestroy();
+}
+
+
+
+
 //双击好友列表事件
 void CMFCChatDlg::OnNMDblclkListFriend(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	/*
-	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
-	// TODO: 在此添加控件通知处理程序代码
-	*pResult = 0;
-
-	// 将指针转换为容易操作的结构类型
-	NMLISTVIEW *pNMListView = (NMLISTVIEW*)pNMHDR;
-
-	// 多个聊天窗口的情况
-	if(-1 != pNMListView->iItem) // 如果iItem不是-1，就说明有列表项被选择 
-	{
-		CString csFrndName; // 被选中好友的名字
-		//CFriendInfo *pFriendInfo;
-		//POSITION pos = m_listFriendInfo.GetHeadPosition();
-		for(int i = 0; i != pNMListView->iItem; ++i)
-		{
-			m_listFriendInfo.GetNext(pos);
-		}
-		pFriendInfo = m_listFriendInfo.GetAt(pos);
-		csFriend = pFriendInfo->csID;
-		//csFriend = m_lstctlFriend.GetItemText(pNMListView->iItem, 0);
-
-		// 寻找是否已存在与该好友的聊天对话框
-		//  nFlag = 1表示存在，nFlag = 0表示不存在
-		//  若存在则不执行任何操作，若不存在则新增一个对话框
-		int nFlag = 0;
-		for each(auto p in m_vecpChatDlg) 
-		{
-			if(p->m_csID == csFriend)
-			{
-				nFlag = 1;
-			}
-		}
-		if(nFlag == 0) // 不存在与被选中好友的对话框，新建一个
-		{
-			CChatDlg* pChatDlg;
-			pChatDlg = new CChatDlg();
-			
-			// 将选定的好友传递给聊天对话框
-			pChatDlg->m_csID = csFriend;
-			
-			m_vecpChatDlg.push_back(pChatDlg);
-			// 创建非模态对话框
-			pChatDlg->Create(IDD_CHAT_DLG, this);
-			// 显示对话框
-			pChatDlg->ShowWindow(SW_SHOW);
-
-			RefreshChatDlgMsg(); // 显示未接收的消息
-			RefreshListCtrlData(); // 更新主对话框的列表控件
-		}
-	}
-	*/
-
 	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
 	// TODO: 在此添加控件通知处理程序代码
 	*pResult = 0;
@@ -218,83 +176,19 @@ void CMFCChatDlg::OnBnClickedButtonAddFriendDlg()
 
 }
 
-// 初始化好友列表的表头
-int CMFCChatDlg::InitListCtrlStyle(void)
-{
-	// 获取列表控件的宽度
-	CRect rect;
-	m_lstctlFriend.GetClientRect(&rect);
-	int nColInterval = rect.Width();
 
-	// 设置ListCtrl的样式
-	//  LVS_EX_GRIDLINES 网格线
-	//  LVS_EX_FULLROWSELECT 整行选中
-	m_lstctlFriend.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT);
-
-	// 插入表头
-	// 参数分别为：列索引（第几列）、列名、列的文字格式、列宽、与列相关联的子项的索引
-	//  LVCFMT_CENTER 居中
-	//  LVCFMT_LEFT   左对齐
-	//  LVCFMT_RIGHT  右对齐
-	m_lstctlFriend.InsertColumn(0, _T("好友名"), LVCFMT_CENTER, int(nColInterval  * 0.75));   
-    m_lstctlFriend.InsertColumn(1, _T("状态"), LVCFMT_CENTER, int(nColInterval * 0.25));   
-
-	return 0;
-}
-
-
-// 更新好友列表数据	
+/*********************************************************
+函数名称：RefreshListCtrlData
+功能描述：刷新列表控件的数据
+创建日期：2016-08-17
+备    注：
+*********************************************************/
 int CMFCChatDlg::RefreshListCtrlData(void)
-{	/*
-	// 在列表视图控件中插入列表项，并设置列表子项文本   
-	POSITION pos = m_listFriendInfo.GetHeadPosition();
-	int i = 0;
-	while(pos != NULL)
-	{
-		CString csAdd; // 附加消息
-		CFriendInfo *pFriendInfo;
-		pFriendInfo = m_listFriendInfo.GetNext(pos);
-
-		// 检查是否有新消息未接收
-		POSITION posMsg = m_listChatMsg.GetHeadPosition();
-		while(posMsg != NULL)
-		{
-			struct MSG_TRANSPOND *p;
-			p = m_listChatMsg.GetNext(posMsg);
-			CString csFormID;
-			csFormID.Format(_T("%s"), p->FormID);
-			if(csFormID == pFriendInfo->csID)
-			{
-				csAdd = "有新消息！";
-				break;
-			}			
-		}
-		m_lstctlFriend.InsertItem(i, pFriendInfo->csID + csAdd); //这应该是显示name的
-		switch(pFriendInfo->nStatus)
-		{
-		case STATUS_ONLINE:
-			m_lstctlFriend.SetItemText(i, 1, _T("在线"));
-			break;
-		case STATUS_BUSY:
-			m_lstctlFriend.SetItemText(i, 1, _T("忙碌"));
-			break;
-		case STATUS_OFFLINE:
-			m_lstctlFriend.SetItemText(i, 1, _T("离线"));
-			break;
-		default:
-			m_lstctlFriend.SetItemText(i, 1, _T("被外星人拐跑了"));
-			break;
-		}
-
-		i++;
-	
-	}
-*/
+{	
 	m_Friend.ShowFriendInfo(&m_lstctlFriend);
 
 	return 0;
 }
-
 
 
 /*********************************************************
@@ -341,7 +235,13 @@ bool CMFCChatDlg::SocketInit(void)
 	return TRUE;
 }
 
-// 接收信息
+
+/*********************************************************
+函数名称：RecvMsg
+功能描述：接收消息
+创建时间：2016-08-03
+备    注：
+*********************************************************/
 int CMFCChatDlg::RecvMsg(void)
 {
 	int nBugLen = 4096;
@@ -395,7 +295,13 @@ int CMFCChatDlg::RecvMsg(void)
 	return 0;
 }
 
-// 发送消息
+
+/*********************************************************
+函数名称：SendMsg
+功能描述：发送消息
+创建时间：2016-08-03
+备    注：
+*********************************************************/
 int CMFCChatDlg::SendMsg(void *msg, int nBufLen)
 {
 	if(m_pSocketChat == NULL)
@@ -415,7 +321,13 @@ int CMFCChatDlg::SendMsg(void *msg, int nBufLen)
 	return nRes;
 }
 
-// 刷新聊天窗口的消息
+
+/*********************************************************
+函数名称：RefreshChatDlgMsg
+功能描述：刷新未查看的消息
+创建时间：2016-08-03
+备    注：如果聊天框打开了就显示消息 没有打开就在主窗口提示
+*********************************************************/
 int CMFCChatDlg::RefreshChatDlgMsg(void)
 {
 	// 遍历第一次
@@ -481,6 +393,7 @@ int CMFCChatDlg::RefreshChatDlgMsg(void)
 	return 0;
 }
 
+
 // 从服务器获取好友信息
 int CMFCChatDlg::InitFriendInfo(struct msg_friend *pMsgFriend)
 {
@@ -512,25 +425,6 @@ void CMFCChatDlg::OnBnClickedBtDelFriend()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	
-}
-
-
-// 对话框关闭时调用下面两个函数
-void CMFCChatDlg::OnCancel()
-{
-	// TODO: 在此添加专用代码和/或调用基类
-	if(m_csMyID != "")
-	{
-		LoginOut();
-	}
-	DestroyWindow();
-	//CDialogEx::OnCancel();
-}
-void CMFCChatDlg::PostNcDestroy()
-{
-	// TODO: 在此添加专用代码和/或调用基类
-	delete this;
-	CDialogEx::PostNcDestroy();
 }
 
 
