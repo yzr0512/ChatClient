@@ -42,6 +42,7 @@ public:
 	afx_msg void OnNMDblclkListFriend(NMHDR *pNMHDR, LRESULT *pResult);	
 	afx_msg void OnBnClickedButtonAddFriendDlg();
 	afx_msg void OnBnClickedBtDelFriend();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	virtual void OnCancel();
 	virtual void PostNcDestroy();
 
@@ -67,6 +68,7 @@ public:
 	int LoginOut(void); // 下线
 	int RecvAddFriendRequest(struct MSG_TRANSPOND* msg_add); // 收到好友请求
 	int UpdateFriendInfo(struct MSG_FRND_INFO* msg_info = NULL); // 更新好友基本信息
+	int HeartBeat(MSG_SYS* msg_sys = NULL);
 
 	int OpenChatDlg(int nItem);
 	int CloseChatDlg(char* nID);
@@ -83,6 +85,6 @@ protected:
 	
 	CList<struct MSG_TRANSPOND*, struct MSG_TRANSPOND*> m_listChatMsg; // 待阅读的聊天消息列表
 	CList<CChatDlg*, CChatDlg*> m_listChatDlg; // 聊天窗口链表
-
+	
 };
 

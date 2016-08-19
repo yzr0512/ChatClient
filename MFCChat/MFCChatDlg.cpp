@@ -1,5 +1,5 @@
-
-// MFCChatDlg.cpp : ÊµÏÖÎÄ¼ş
+ï»¿
+// MFCChatDlg.cpp : å®ç°æ–‡ä»¶
 //
 
 #include "stdafx.h"
@@ -12,7 +12,11 @@
 #define new DEBUG_NEW
 #endif
 
-// CMFCChatDlg ¶Ô»°¿ò
+#define TIMER_HEARTBEAT 123
+
+#define TIMER_UPDATE_FRIEND_INFO 456
+
+// CMFCChatDlg å¯¹è¯æ¡†
 
 CMFCChatDlg::CMFCChatDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CMFCChatDlg::IDD, pParent)
@@ -42,63 +46,64 @@ BEGIN_MESSAGE_MAP(CMFCChatDlg, CDialogEx)
 	ON_NOTIFY(NM_DBLCLK, IDC_LIST_FRIEND, &CMFCChatDlg::OnNMDblclkListFriend)
 	ON_BN_CLICKED(IDC_BUTTON_ADD_FRIEND_DLG, &CMFCChatDlg::OnBnClickedButtonAddFriendDlg)
 	ON_BN_CLICKED(IDC_BT_DEL_FRIEND, &CMFCChatDlg::OnBnClickedBtDelFriend)
+ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 
-// CMFCChatDlg ÏûÏ¢´¦Àí³ÌĞò
+// CMFCChatDlg æ¶ˆæ¯å¤„ç†ç¨‹åº
 
 BOOL CMFCChatDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	// ÉèÖÃ´Ë¶Ô»°¿òµÄÍ¼±ê¡£µ±Ó¦ÓÃ³ÌĞòÖ÷´°¿Ú²»ÊÇ¶Ô»°¿òÊ±£¬¿ò¼Ü½«×Ô¶¯
-	//  Ö´ĞĞ´Ë²Ù×÷
-	SetIcon(m_hIcon, TRUE);			// ÉèÖÃ´óÍ¼±ê
-	SetIcon(m_hIcon, FALSE);		// ÉèÖÃĞ¡Í¼±ê
+	// è®¾ç½®æ­¤å¯¹è¯æ¡†çš„å›¾æ ‡ã€‚å½“åº”ç”¨ç¨‹åºä¸»çª—å£ä¸æ˜¯å¯¹è¯æ¡†æ—¶ï¼Œæ¡†æ¶å°†è‡ªåŠ¨
+	//  æ‰§è¡Œæ­¤æ“ä½œ
+	SetIcon(m_hIcon, TRUE);			// è®¾ç½®å¤§å›¾æ ‡
+	SetIcon(m_hIcon, FALSE);		// è®¾ç½®å°å›¾æ ‡
 
-	// TODO: ÔÚ´ËÌí¼Ó¶îÍâµÄ³õÊ¼»¯´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ é¢å¤–çš„åˆå§‹åŒ–ä»£ç 
 	
-	// ´ò¿ªµÇÂ¼´°¿Ú
+	// æ‰“å¼€ç™»å½•çª—å£
 	if(m_pLoginDlg == NULL)
 	{
 		m_pLoginDlg = new CLoginDlg(this);	
-		m_pLoginDlg->Create(IDD_LOGIN_DLG);
-		m_pLoginDlg->CenterWindow(); // µÇÂ½´°¿Ú¾ÓÖĞÏÔÊ¾
+		m_pLoginDlg->Create(IDD_LOGIN_DLG, GetDesktopWindow());
+		m_pLoginDlg->CenterWindow(); // ç™»é™†çª—å£å±…ä¸­æ˜¾ç¤º
 		m_pLoginDlg->ShowWindow(SW_SHOW);
 	}
 	//ShowWindow(SW_SHOW);
-	CenterWindow(); // Ö÷´°¿Ú¾ÓÖĞ
+	CenterWindow(); // ä¸»çª—å£å±…ä¸­
 	
 	UpdateData(TRUE);
 	
-	// ÏÔÊ¾ÓÃ»§Ãû
+	// æ˜¾ç¤ºç”¨æˆ·å
 	m_csMyName = m_dlgLogin.m_csID;
 	
-	// ¸üĞÂºÃÓÑÁĞ±íµÄÊı¾İ
+	// æ›´æ–°å¥½å‹åˆ—è¡¨çš„æ•°æ®
 	RefreshListCtrlData();
 
-	// ÉèÖÃÔÚÏß×´Ì¬
-	m_cbState.SelectString(0, _T("ÔÚÏß"));
+	// è®¾ç½®åœ¨çº¿çŠ¶æ€
+	m_cbState.SelectString(0, _T("åœ¨çº¿"));
 		
 	UpdateData(FALSE);
 	
-	return TRUE;  // ³ı·Ç½«½¹µãÉèÖÃµ½¿Ø¼ş£¬·ñÔò·µ»Ø TRUE
+	return TRUE;  // é™¤éå°†ç„¦ç‚¹è®¾ç½®åˆ°æ§ä»¶ï¼Œå¦åˆ™è¿”å› TRUE
 }
 
-// Èç¹ûÏò¶Ô»°¿òÌí¼Ó×îĞ¡»¯°´Å¥£¬ÔòĞèÒªÏÂÃæµÄ´úÂë
-//  À´»æÖÆ¸ÃÍ¼±ê¡£¶ÔÓÚÊ¹ÓÃÎÄµµ/ÊÓÍ¼Ä£ĞÍµÄ MFC Ó¦ÓÃ³ÌĞò£¬
-//  Õâ½«ÓÉ¿ò¼Ü×Ô¶¯Íê³É¡£
+// å¦‚æœå‘å¯¹è¯æ¡†æ·»åŠ æœ€å°åŒ–æŒ‰é’®ï¼Œåˆ™éœ€è¦ä¸‹é¢çš„ä»£ç 
+//  æ¥ç»˜åˆ¶è¯¥å›¾æ ‡ã€‚å¯¹äºä½¿ç”¨æ–‡æ¡£/è§†å›¾æ¨¡å‹çš„ MFC åº”ç”¨ç¨‹åºï¼Œ
+//  è¿™å°†ç”±æ¡†æ¶è‡ªåŠ¨å®Œæˆã€‚
 
 void CMFCChatDlg::OnPaint()
 {
 	
 	if (IsIconic())
 	{
-		CPaintDC dc(this); // ÓÃÓÚ»æÖÆµÄÉè±¸ÉÏÏÂÎÄ
+		CPaintDC dc(this); // ç”¨äºç»˜åˆ¶çš„è®¾å¤‡ä¸Šä¸‹æ–‡
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
-		// Ê¹Í¼±êÔÚ¹¤×÷Çø¾ØĞÎÖĞ¾ÓÖĞ
+		// ä½¿å›¾æ ‡åœ¨å·¥ä½œåŒºçŸ©å½¢ä¸­å±…ä¸­
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
 		CRect rect;
@@ -106,7 +111,7 @@ void CMFCChatDlg::OnPaint()
 		int x = (rect.Width() - cxIcon + 1) / 2;
 		int y = (rect.Height() - cyIcon + 1) / 2;
 
-		// »æÖÆÍ¼±ê
+		// ç»˜åˆ¶å›¾æ ‡
 		dc.DrawIcon(x, y, m_hIcon);
 	}
 	else
@@ -115,8 +120,8 @@ void CMFCChatDlg::OnPaint()
 	}
 }
 
-//µ±ÓÃ»§ÍÏ¶¯×îĞ¡»¯´°¿ÚÊ±ÏµÍ³µ÷ÓÃ´Ëº¯ÊıÈ¡µÃ¹â±ê
-//ÏÔÊ¾¡£
+//å½“ç”¨æˆ·æ‹–åŠ¨æœ€å°åŒ–çª—å£æ—¶ç³»ç»Ÿè°ƒç”¨æ­¤å‡½æ•°å–å¾—å…‰æ ‡
+//æ˜¾ç¤ºã€‚
 HCURSOR CMFCChatDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
@@ -124,10 +129,10 @@ HCURSOR CMFCChatDlg::OnQueryDragIcon()
 
 
 
-// ¶Ô»°¿ò¹Ø±ÕÊ±µ÷ÓÃÏÂÃæÁ½¸öº¯Êı
+// å¯¹è¯æ¡†å…³é—­æ—¶è°ƒç”¨ä¸‹é¢ä¸¤ä¸ªå‡½æ•°
 void CMFCChatDlg::OnCancel()
 {
-	// TODO: ÔÚ´ËÌí¼Ó×¨ÓÃ´úÂëºÍ/»òµ÷ÓÃ»ùÀà
+	// TODO: åœ¨æ­¤æ·»åŠ ä¸“ç”¨ä»£ç å’Œ/æˆ–è°ƒç”¨åŸºç±»
 	if(m_csMyID != "")
 	{
 		LoginOut();
@@ -137,35 +142,33 @@ void CMFCChatDlg::OnCancel()
 }
 void CMFCChatDlg::PostNcDestroy()
 {
-	// TODO: ÔÚ´ËÌí¼Ó×¨ÓÃ´úÂëºÍ/»òµ÷ÓÃ»ùÀà
+	// TODO: åœ¨æ­¤æ·»åŠ ä¸“ç”¨ä»£ç å’Œ/æˆ–è°ƒç”¨åŸºç±»
 	delete this;
 	CDialogEx::PostNcDestroy();
 }
 
 
-
-
-//Ë«»÷ºÃÓÑÁĞ±íÊÂ¼ş
+//åŒå‡»å¥½å‹åˆ—è¡¨äº‹ä»¶
 void CMFCChatDlg::OnNMDblclkListFriend(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	*pResult = 0;
 
-	// ½«Ö¸Õë×ª»»ÎªÈİÒ×²Ù×÷µÄ½á¹¹ÀàĞÍ
+	// å°†æŒ‡é’ˆè½¬æ¢ä¸ºå®¹æ˜“æ“ä½œçš„ç»“æ„ç±»å‹
 	NMLISTVIEW *pNMListView = (NMLISTVIEW*)pNMHDR;
 
-	if(-1 != pNMListView->iItem) // Èç¹ûiItem²»ÊÇ-1£¬¾ÍËµÃ÷ÓĞÁĞ±íÏî±»Ñ¡Ôñ 
+	if(-1 != pNMListView->iItem) // å¦‚æœiItemä¸æ˜¯-1ï¼Œå°±è¯´æ˜æœ‰åˆ—è¡¨é¡¹è¢«é€‰æ‹© 
 	{
 		OpenChatDlg(pNMListView->iItem);
 	}
 
 }
 
-//°´Å¥£ºÌí¼ÓºÃÓÑ
+//æŒ‰é’®ï¼šæ·»åŠ å¥½å‹
 void CMFCChatDlg::OnBnClickedButtonAddFriendDlg()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	
 	if(m_pAddFriendDlg == NULL)
 	{
@@ -178,10 +181,10 @@ void CMFCChatDlg::OnBnClickedButtonAddFriendDlg()
 
 
 /*********************************************************
-º¯ÊıÃû³Æ£ºRefreshListCtrlData
-¹¦ÄÜÃèÊö£ºË¢ĞÂÁĞ±í¿Ø¼şµÄÊı¾İ
-´´½¨ÈÕÆÚ£º2016-08-17
-±¸    ×¢£º
+å‡½æ•°åç§°ï¼šRefreshListCtrlData
+åŠŸèƒ½æè¿°ï¼šåˆ·æ–°åˆ—è¡¨æ§ä»¶çš„æ•°æ®
+åˆ›å»ºæ—¥æœŸï¼š2016-08-17
+å¤‡    æ³¨ï¼š
 *********************************************************/
 int CMFCChatDlg::RefreshListCtrlData(void)
 {	
@@ -192,10 +195,10 @@ int CMFCChatDlg::RefreshListCtrlData(void)
 
 
 /*********************************************************
-º¯ÊıÃû³Æ£ºSocketInit
-¹¦ÄÜÃèÊö£º³õÊ¼»¯Socket
-·µ »Ø Öµ£º³É¹¦·µ»ØTRUE
-±¸    ×¢£º
+å‡½æ•°åç§°ï¼šSocketInit
+åŠŸèƒ½æè¿°ï¼šåˆå§‹åŒ–Socket
+è¿” å› å€¼ï¼šæˆåŠŸè¿”å›TRUE
+å¤‡    æ³¨ï¼š
 *********************************************************/
 bool CMFCChatDlg::SocketInit(void)
 {
@@ -208,28 +211,28 @@ bool CMFCChatDlg::SocketInit(void)
 
 	if(m_pSocketChat == NULL)
 	{
-		//Ì×½Ó×Ö³õÊ¼»¯Ê§°Ü
+		//å¥—æ¥å­—åˆå§‹åŒ–å¤±è´¥
 		delete m_pSocketChat;
 		m_pSocketChat = NULL;
-		MessageBox(_T("Ì×½Ó×Ö³õÊ¼»¯Ê§°Ü£¡"));
+		MessageBox(_T("å¥—æ¥å­—åˆå§‹åŒ–å¤±è´¥ï¼"));
 		return FALSE;
 	}
 
 	if(!m_pSocketChat->Create())
 	{
-		//´´½¨Ê§°Ü
+		//åˆ›å»ºå¤±è´¥
 		delete m_pSocketChat;
 		m_pSocketChat = NULL;
-		MessageBox(_T("Ì×½Ó×Ö´´½¨Ê§°Ü£¡"));
+		MessageBox(_T("å¥—æ¥å­—åˆ›å»ºå¤±è´¥ï¼"));
 		return FALSE;
 	}
 	
 	if(m_pSocketChat->Connect(_T("127.0.0.1"), 8080) == 0)
 	{
-		//Á¬½Ó·şÎñÆ÷Ê§°Ü
+		//è¿æ¥æœåŠ¡å™¨å¤±è´¥
 		delete m_pSocketChat;
 		m_pSocketChat = NULL;
-		MessageBox(_T("Á¬½Ó·şÎñÆ÷Ê§°Ü£¡"));
+		MessageBox(_T("è¿æ¥æœåŠ¡å™¨å¤±è´¥ï¼"));
 		return FALSE;
 	}
 	return TRUE;
@@ -237,26 +240,26 @@ bool CMFCChatDlg::SocketInit(void)
 
 
 /*********************************************************
-º¯ÊıÃû³Æ£ºRecvMsg
-¹¦ÄÜÃèÊö£º½ÓÊÕÏûÏ¢
-´´½¨Ê±¼ä£º2016-08-03
-±¸    ×¢£º
+å‡½æ•°åç§°ï¼šRecvMsg
+åŠŸèƒ½æè¿°ï¼šæ¥æ”¶æ¶ˆæ¯
+åˆ›å»ºæ—¶é—´ï¼š2016-08-03
+å¤‡    æ³¨ï¼š
 *********************************************************/
 int CMFCChatDlg::RecvMsg(void)
 {
 	int nBugLen = 4096;
-	struct MSG_T *msg_recv = new struct MSG_T; // ½ÓÊÕµ½µÄÊı¾İ
-	int nRes; // ½ÓÊÕµ½µÄ×Ö½ÚÊı
+	struct MSG_T *msg_recv = new struct MSG_T; // æ¥æ”¶åˆ°çš„æ•°æ®
+	int nRes; // æ¥æ”¶åˆ°çš„å­—èŠ‚æ•°
 	nRes = m_pSocketChat->Receive((char*)msg_recv, nBugLen);
 
-	if(nRes == 0) // Ã»ÓĞ½ÓÊÕµ½Êı¾İ
+	if(nRes == 0) // æ²¡æœ‰æ¥æ”¶åˆ°æ•°æ®
 	{
 		return 0;
 	}
 	
 	switch(msg_recv->nType)
 	{
-	case LOGIN_SUCCESS: // µÇÂ¼³É¹¦
+	case LOGIN_SUCCESS: // ç™»å½•æˆåŠŸ
 		LoginSuccess((struct MSG_USERINFO*)msg_recv);
 		break;	
 	case CHATING_TEXT_MSG:
@@ -271,12 +274,12 @@ int CMFCChatDlg::RecvMsg(void)
 		//m_dlgLogin.m_dlgRegist.RegisterSuccess((struct MSG_REGISTER*)&msg_recv);
 		m_pLoginDlg->m_pRegDlg->RegisterSuccess((struct MSG_REGISTER*)msg_recv);
 		break;
-	case REGISTER_FAILED: // ×¢²áÊ§°Ü
+	case REGISTER_FAILED: // æ³¨å†Œå¤±è´¥
 		/*CString csMsg;
 		csMsg.Format(_T("%s"),msg_recv.Data);		
 		MessageBox(csMsg);*/
 		break;
-	case IDS_SYSTEM_MESSAGE: // ÏµÍ³ÏûÏ¢
+	case IDS_SYSTEM_MESSAGE: // ç³»ç»Ÿæ¶ˆæ¯
 		SystemMessage((struct MSG_SYS*)msg_recv);
 		break;
 	case GET_STRANGER_INFO:
@@ -297,17 +300,17 @@ int CMFCChatDlg::RecvMsg(void)
 
 
 /*********************************************************
-º¯ÊıÃû³Æ£ºSendMsg
-¹¦ÄÜÃèÊö£º·¢ËÍÏûÏ¢
-´´½¨Ê±¼ä£º2016-08-03
-±¸    ×¢£º
+å‡½æ•°åç§°ï¼šSendMsg
+åŠŸèƒ½æè¿°ï¼šå‘é€æ¶ˆæ¯
+åˆ›å»ºæ—¶é—´ï¼š2016-08-03
+å¤‡    æ³¨ï¼š
 *********************************************************/
 int CMFCChatDlg::SendMsg(void *msg, int nBufLen)
 {
 	if(m_pSocketChat == NULL)
 	{
 		if(!SocketInit())
-		{// Socket³õÊ¼»¯Ê§°Ü
+		{// Socketåˆå§‹åŒ–å¤±è´¥
 			return 0;
 		}
 	}
@@ -316,28 +319,28 @@ int CMFCChatDlg::SendMsg(void *msg, int nBufLen)
 	nRes = m_pSocketChat->Send(msg, nBufLen);
 	if(nRes == 0)
 	{
-		MessageBox(_T("ÏûÏ¢·¢ËÍÊ§°Ü£¡"));
+		MessageBox(_T("æ¶ˆæ¯å‘é€å¤±è´¥ï¼"));
 	}
 	return nRes;
 }
 
 
 /*********************************************************
-º¯ÊıÃû³Æ£ºRefreshChatDlgMsg
-¹¦ÄÜÃèÊö£ºË¢ĞÂÎ´²é¿´µÄÏûÏ¢
-´´½¨Ê±¼ä£º2016-08-03
-±¸    ×¢£ºÈç¹ûÁÄÌì¿ò´ò¿ªÁË¾ÍÏÔÊ¾ÏûÏ¢ Ã»ÓĞ´ò¿ª¾ÍÔÚÖ÷´°¿ÚÌáÊ¾
+å‡½æ•°åç§°ï¼šRefreshChatDlgMsg
+åŠŸèƒ½æè¿°ï¼šåˆ·æ–°æœªæŸ¥çœ‹çš„æ¶ˆæ¯
+åˆ›å»ºæ—¶é—´ï¼š2016-08-03
+å¤‡    æ³¨ï¼šå¦‚æœèŠå¤©æ¡†æ‰“å¼€äº†å°±æ˜¾ç¤ºæ¶ˆæ¯ æ²¡æœ‰æ‰“å¼€å°±åœ¨ä¸»çª—å£æç¤º
 *********************************************************/
 int CMFCChatDlg::RefreshChatDlgMsg(void)
 {
-	// ±éÀúµÚÒ»´Î
-	//   Èç¹ûÁÄÌì´°¿ÚÒÑ´ò¿ª Ôò½«ÏûÏ¢Êä³öµ½ÁÄÌì´°¿Ú
+	// éå†ç¬¬ä¸€æ¬¡
+	//   å¦‚æœèŠå¤©çª—å£å·²æ‰“å¼€ åˆ™å°†æ¶ˆæ¯è¾“å‡ºåˆ°èŠå¤©çª—å£
 	
 	int nFlag = 0;	
 	POSITION posMsg = m_listChatMsg.GetHeadPosition();
 	while(posMsg != NULL)
 	{
-		struct MSG_TRANSPOND *pChatMsg = m_listChatMsg.GetNext(posMsg); // ·µ»Øµ±Ç°Î»ÖÃµÄÔªËØ ²¢½«posÖ¸ÏòÏÂÒ»¸öÔªËØ			
+		struct MSG_TRANSPOND *pChatMsg = m_listChatMsg.GetNext(posMsg); // è¿”å›å½“å‰ä½ç½®çš„å…ƒç´  å¹¶å°†posæŒ‡å‘ä¸‹ä¸€ä¸ªå…ƒç´ 			
 		CString csFromID;
 		csFromID = pChatMsg->FromID;
 		POSITION posDlg = m_listChatDlg.GetHeadPosition();
@@ -354,27 +357,27 @@ int CMFCChatDlg::RefreshChatDlgMsg(void)
 				CTime tm = CTime::GetCurrentTime();
 				if(tm.Format(_T("%Y-%m-%d")) == csDate)
 				{	
-					// µ±Ìì½ÓÊÕ
+					// å½“å¤©æ¥æ”¶
 					pChatDlg->AddMessage(csFromID, csTime, csMsg);
 				}
 				else
 				{
-					// ¸ôÌì½ÓÊÕ
+					// éš”å¤©æ¥æ”¶
 					pChatDlg->AddMessage(csFromID, csDate + " " + csTime, csMsg);
 				}
 
 				if(posMsg != NULL)
 				{
 					POSITION posMsgTemp = posMsg;
-					m_listChatMsg.GetPrev(posMsgTemp); //½«pos1Ö¸Ïòµ±Ç°ÔªËØ
-					m_listChatMsg.RemoveAt(posMsgTemp); //´ÓÏûÏ¢ÖĞÒÆ³ı
+					m_listChatMsg.GetPrev(posMsgTemp); //å°†pos1æŒ‡å‘å½“å‰å…ƒç´ 
+					m_listChatMsg.RemoveAt(posMsgTemp); //ä»æ¶ˆæ¯ä¸­ç§»é™¤
 				}
 				else
 				{
 					m_listChatMsg.RemoveTail();
 				}
 
-				//delete pChatMsg; // ÊÍ·Å½á¹¹ÌåÕ¼ÓÃµÄÄÚ´æ *³ö´í*	
+				//delete pChatMsg; // é‡Šæ”¾ç»“æ„ä½“å ç”¨çš„å†…å­˜ *å‡ºé”™*	
 			}
 		}				
 	}
@@ -387,53 +390,54 @@ int CMFCChatDlg::RefreshChatDlgMsg(void)
 		m_Friend.SetIsHaveMsg(pChatMsg->FromID, TRUE);
 	}
 
-	// Ë¢ĞÂÁĞ±í¿Ø¼şÀïÃæµÄĞÅÏ¢
+	// åˆ·æ–°åˆ—è¡¨æ§ä»¶é‡Œé¢çš„ä¿¡æ¯
 	RefreshListCtrlData();
 
 	return 0;
 }
 
 
-// ´Ó·şÎñÆ÷»ñÈ¡ºÃÓÑĞÅÏ¢
+// ä»æœåŠ¡å™¨è·å–å¥½å‹ä¿¡æ¯
 int CMFCChatDlg::InitFriendInfo(struct msg_friend *pMsgFriend)
 {
 	/*
-	// Èç¹û²ÎÊıÎªNULL ÔòÇå¿Õm_listFriendInfo
-	// È»ºóÏò·şÎñÆ÷·¢ËÍÒ»Ìõ»ñÈ¡ºÃÓÑĞÅÏ¢µÄÏûÏ¢
+	// å¦‚æœå‚æ•°ä¸ºNULL åˆ™æ¸…ç©ºm_listFriendInfo
+	// ç„¶åå‘æœåŠ¡å™¨å‘é€ä¸€æ¡è·å–å¥½å‹ä¿¡æ¯çš„æ¶ˆæ¯
 	if(pMsgFriend == NULL)
 	{
-		m_listFriendInfo.RemoveAll(); // É¾³ıËùÓĞºÃÓÑ
+		m_listFriendInfo.RemoveAll(); // åˆ é™¤æ‰€æœ‰å¥½å‹
 		struct msg_friend_num msg;
 		msg.nType = GET_FRIEND_INFO_ALL;
 		SendMsg(&msg);
 		return 0;
 	}
 
-	// Èç¹û²ÎÊı²»ÎªNULL ÔòÍùm_listFriendInfoÀïÃæÌí¼ÓÔªËØ
+	// å¦‚æœå‚æ•°ä¸ä¸ºNULL åˆ™å¾€m_listFriendInfoé‡Œé¢æ·»åŠ å…ƒç´ 
 	class CFriendInfo friendinfo;
 	friendinfo.csID.Format(_T("%s"), pMsgFriend->ID); // ID
-	friendinfo.csName.Format(_T("%s"), pMsgFriend->Name);// Ãû×Ö
-	friendinfo.nStatus = pMsgFriend->nStatus; // ÔÚÏß×´Ì¬
-	friendinfo.num = m_listFriendInfo.GetCount(); // ĞòºÅ
+	friendinfo.csName.Format(_T("%s"), pMsgFriend->Name);// åå­—
+	friendinfo.nStatus = pMsgFriend->nStatus; // åœ¨çº¿çŠ¶æ€
+	friendinfo.num = m_listFriendInfo.GetCount(); // åºå·
 	m_listFriendInfo.AddTail(&friendinfo);
 	*/
 	return 0;
 }
 
-// É¾³ıºÃÓÑ
+
+// åˆ é™¤å¥½å‹
 void CMFCChatDlg::OnBnClickedBtDelFriend()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	
 }
 
 
 /*********************************************************
-º¯ÊıÃû³Æ£ºLoginSuccess
-¹¦ÄÜÃèÊö£ºµÇÂ¼³É¹¦
-²ÎÊıËµÃ÷£ºmsg_info-µÇÂ½³É¹¦Ê±·şÎñÆ÷·µ»ØµÄÓÃ»§ĞÅÏ¢
-·µ »Ø Öµ£º
-±¸    ×¢£º
+å‡½æ•°åç§°ï¼šLoginSuccess
+åŠŸèƒ½æè¿°ï¼šç™»å½•æˆåŠŸ
+å‚æ•°è¯´æ˜ï¼šmsg_info-ç™»é™†æˆåŠŸæ—¶æœåŠ¡å™¨è¿”å›çš„ç”¨æˆ·ä¿¡æ¯
+è¿” å› å€¼ï¼š
+å¤‡    æ³¨ï¼š
 *********************************************************/
 int CMFCChatDlg::LoginSuccess(MSG_USERINFO* msg_info)
 {
@@ -441,23 +445,27 @@ int CMFCChatDlg::LoginSuccess(MSG_USERINFO* msg_info)
 	m_csMyID = m_pLoginDlg->m_csID;
 
 	//m_dlgLogin.EndDialog(LOGIN_SUCCESS);
-	m_pLoginDlg->OnCancel(); // ¹Ø±ÕµÇÂ¼´°¿Ú
+	m_pLoginDlg->OnCancel(); // å…³é—­ç™»å½•çª—å£
 	m_pLoginDlg = NULL;
-	m_csMyName = (LPCTSTR)msg_info->Name; // ÓÃ»§êÇ³Æ
-	//MessageBox(L"µÇÂ½³É¹¦£¡");
+	m_csMyName = (LPCTSTR)msg_info->Name; // ç”¨æˆ·æ˜µç§°
+	//MessageBox(L"ç™»é™†æˆåŠŸï¼");
 	ShowWindow(SW_SHOW);
 	UpdateData(FALSE);
 	UpdateFriendInfo();
+	
+	SetTimer(TIMER_HEARTBEAT, 2000, NULL);
+	SetTimer(TIMER_UPDATE_FRIEND_INFO, 10000, NULL);
+
 	return 0;
 }
 
 
 /*********************************************************
-º¯ÊıÃû³Æ£ºLoginOut
-¹¦ÄÜÃèÊö£ºÍË³öµÇÂ¼
-²ÎÊıËµÃ÷£º
-·µ »Ø Öµ£º
-±¸    ×¢£º
+å‡½æ•°åç§°ï¼šLoginOut
+åŠŸèƒ½æè¿°ï¼šé€€å‡ºç™»å½•
+å‚æ•°è¯´æ˜ï¼š
+è¿” å› å€¼ï¼š
+å¤‡    æ³¨ï¼š
 **************** *****************************************/
 int CMFCChatDlg::LoginOut(void)
 {
@@ -468,23 +476,27 @@ int CMFCChatDlg::LoginOut(void)
 	wcstombs_s(&i, msg_lg.nID, m_csMyID, m_csMyID.GetLength() + 1);
 	SendMsg(&msg_lg, sizeof(msg_lg));
 	m_csMyID = "";
+	m_pSocketChat->Close();
+	delete m_pSocketChat;
+	m_pSocketChat = NULL;
+
 	return 0;
 }
 
 
 /*********************************************************
-º¯ÊıÃû³Æ£ºSystemMessage
-¹¦ÄÜÃèÊö£ºÌáÊ¾À´×Ô·şÎñÆ÷µÄÏµÍ³ÏûÏ¢
-²ÎÊıËµÃ÷£º
-·µ »Ø Öµ£º
-±¸    ×¢£º
+å‡½æ•°åç§°ï¼šSystemMessage
+åŠŸèƒ½æè¿°ï¼šæç¤ºæ¥è‡ªæœåŠ¡å™¨çš„ç³»ç»Ÿæ¶ˆæ¯
+å‚æ•°è¯´æ˜ï¼š
+è¿” å› å€¼ï¼š
+å¤‡    æ³¨ï¼š
 *********************************************************/
 int CMFCChatDlg::SystemMessage(MSG_SYS* msg_sys)
 {
-	// Ê×ÏÈµ¯Ò»¸ö¿ò ÌáÊ¾ÄÚÈİ
+	// é¦–å…ˆå¼¹ä¸€ä¸ªæ¡† æç¤ºå†…å®¹
 	AfxMessageBox(msg_sys->nIDPrompt);
 
-	// È»ºó¸ù¾İnIDPromptÀ´Ö´ĞĞÒ»Ğ©ÆäËû²Ù×÷
+	// ç„¶åæ ¹æ®nIDPromptæ¥æ‰§è¡Œä¸€äº›å…¶ä»–æ“ä½œ
 	switch(msg_sys->nIDPrompt)
 	{
 	case IDS_ADD_FRIEND_SUCCESS:
@@ -505,11 +517,11 @@ int CMFCChatDlg::SystemMessage(MSG_SYS* msg_sys)
 
 
 /*********************************************************
-º¯ÊıÃû³Æ£ºRecvAddFriendRequest
-¹¦ÄÜÃèÊö£ºÊÕµ½ºÃÓÑÇëÇó
-²ÎÊıËµÃ÷£ºmsg_add-ÇëÇóÏûÏ¢
-·µ »Ø Öµ£º
-±¸    ×¢£º
+å‡½æ•°åç§°ï¼šRecvAddFriendRequest
+åŠŸèƒ½æè¿°ï¼šæ”¶åˆ°å¥½å‹è¯·æ±‚
+å‚æ•°è¯´æ˜ï¼šmsg_add-è¯·æ±‚æ¶ˆæ¯
+è¿” å› å€¼ï¼š
+å¤‡    æ³¨ï¼š
 *********************************************************/
 int CMFCChatDlg::RecvAddFriendRequest(struct MSG_TRANSPOND* msg_add)
 {
@@ -517,7 +529,7 @@ int CMFCChatDlg::RecvAddFriendRequest(struct MSG_TRANSPOND* msg_add)
 	CString csFromID;
 	csFromID = msg_add->FromID;
 	int nRes;
-	nRes = MessageBox(L"ÕËºÅ£º" + csFromID + L" ÇëÇóÌí¼ÓÄúÎªºÃÓÑ£¬ÊÇ·ñÍ¬ÒâÇëÇó£¿", L"ºÃÓÑÌí¼ÓÇëÇó", MB_YESNO);
+	nRes = MessageBox(L"è´¦å·ï¼š" + csFromID + L" è¯·æ±‚æ·»åŠ æ‚¨ä¸ºå¥½å‹ï¼Œæ˜¯å¦åŒæ„è¯·æ±‚ï¼Ÿ", L"å¥½å‹æ·»åŠ è¯·æ±‚", MB_YESNO);
 	if(nRes == IDYES)
 	{
 		msg_add->nReturn = ADD_FRIEND_AGREE;
@@ -533,12 +545,12 @@ int CMFCChatDlg::RecvAddFriendRequest(struct MSG_TRANSPOND* msg_add)
 
 
 /*********************************************************
-º¯ÊıÃû³Æ£ºUpdateFriendInfo
-¹¦ÄÜÃèÊö£º¸üĞÂÈ«²¿ºÃÓÑĞÅÏ¢
-²ÎÊıËµÃ÷£ºmsg_info-È«²¿ºÃÓÑµÄID¡¢Ãû×ÖºÍ×´Ì¬
-´´½¨ÈÕÆÚ£º2016-08-07
-·µ »Ø Öµ£º
-±¸    ×¢£ºÈç¹û²ÎÊıÎª¿Õ ÔòÊÇÏò·şÎñÆ÷·¢ËÍÇëÇóÏûÏ¢
+å‡½æ•°åç§°ï¼šUpdateFriendInfo
+åŠŸèƒ½æè¿°ï¼šæ›´æ–°å…¨éƒ¨å¥½å‹ä¿¡æ¯
+å‚æ•°è¯´æ˜ï¼šmsg_info-å…¨éƒ¨å¥½å‹çš„IDã€åå­—å’ŒçŠ¶æ€
+åˆ›å»ºæ—¥æœŸï¼š2016-08-07
+è¿” å› å€¼ï¼š
+å¤‡    æ³¨ï¼šå¦‚æœå‚æ•°ä¸ºç©º åˆ™æ˜¯å‘æœåŠ¡å™¨å‘é€è¯·æ±‚æ¶ˆæ¯
 *********************************************************/
 int CMFCChatDlg::UpdateFriendInfo(MSG_FRND_INFO* msg_info)
 {
@@ -563,11 +575,11 @@ int CMFCChatDlg::UpdateFriendInfo(MSG_FRND_INFO* msg_info)
 
 
 /*********************************************************
-º¯ÊıÃû³Æ£ºOpenChatDlg
-¹¦ÄÜÃèÊö£º´ò¿ªÁÄÌì¶Ô»°¿ò
-²ÎÊıËµÃ÷£ºnItem-ĞòºÅ
-´´½¨ÈÕÆÚ£º2016-08-15
-·µ »Ø Öµ£º
+å‡½æ•°åç§°ï¼šOpenChatDlg
+åŠŸèƒ½æè¿°ï¼šæ‰“å¼€èŠå¤©å¯¹è¯æ¡†
+å‚æ•°è¯´æ˜ï¼šnItem-åºå·
+åˆ›å»ºæ—¥æœŸï¼š2016-08-15
+è¿” å› å€¼ï¼š
 *********************************************************/
 int CMFCChatDlg::OpenChatDlg(int nItem)
 {
@@ -583,16 +595,16 @@ int CMFCChatDlg::OpenChatDlg(int nItem)
 		CChatDlg *p = m_listChatDlg.GetNext(pos);
 		if(!strcmp(nID, p->m_nID))
 		{
-			Flag = TRUE; // ÁÄÌì¿òÒÑ¾­´æÔÚ
+			Flag = TRUE; // èŠå¤©æ¡†å·²ç»å­˜åœ¨
 			p->ShowWindow(SW_SHOWNORMAL);
 			break;
 		}
 	}
 
-	if(!Flag) // ÁÄÌì¿ò²»´æÔÚ¾Í´´½¨Ò»¸ö
+	if(!Flag) // èŠå¤©æ¡†ä¸å­˜åœ¨å°±åˆ›å»ºä¸€ä¸ª
 	{
 		CChatDlg *pChatDlg = new CChatDlg(this);
-		strcpy_s(pChatDlg->m_nID, ID_MAX, nID); // ¸´ÖÆÒªÔÚcreateÖ®Ç°Ö´ĞĞ ²»È»´°¿Ú±êÌâ»áÂÒÂë
+		strcpy_s(pChatDlg->m_nID, ID_MAX, nID); // å¤åˆ¶è¦åœ¨createä¹‹å‰æ‰§è¡Œ ä¸ç„¶çª—å£æ ‡é¢˜ä¼šä¹±ç 
 		memcpy_s(pChatDlg->m_Name, NAME_MAX, name, NAME_MAX);	
 		pChatDlg->Create(IDD_CHAT_DLG, GetDesktopWindow());
 		pChatDlg->ShowWindow(SW_SHOW);		
@@ -605,11 +617,11 @@ int CMFCChatDlg::OpenChatDlg(int nItem)
 
 
 /*********************************************************
-º¯ÊıÃû³Æ£ºCloseChatDlg
-¹¦ÄÜÃèÊö£º¹Ø±ÕÁÄÌì¶Ô»°¿ò
-²ÎÊıËµÃ÷£ºnID-ºÃÓÑID
-´´½¨ÈÕÆÚ£º2016-08-15
-·µ »Ø Öµ£º
+å‡½æ•°åç§°ï¼šCloseChatDlg
+åŠŸèƒ½æè¿°ï¼šå…³é—­èŠå¤©å¯¹è¯æ¡†
+å‚æ•°è¯´æ˜ï¼šnID-å¥½å‹ID
+åˆ›å»ºæ—¥æœŸï¼š2016-08-15
+è¿” å› å€¼ï¼š
 *********************************************************/
 int CMFCChatDlg::CloseChatDlg(char* nID)
 {
@@ -620,7 +632,7 @@ int CMFCChatDlg::CloseChatDlg(char* nID)
 		if(!strcmp(nID, p->m_nID))
 		{
 			if(pos == NULL)
-			{// ÒªÉ¾³ıµÄÔªËØÊÇ×îºóÒ»¸ö
+			{// è¦åˆ é™¤çš„å…ƒç´ æ˜¯æœ€åä¸€ä¸ª
 				m_listChatDlg.RemoveTail();
 			}
 			else
@@ -635,4 +647,47 @@ int CMFCChatDlg::CloseChatDlg(char* nID)
 
 
 	return 0;
+}
+
+
+int CMFCChatDlg::HeartBeat(MSG_SYS* msg_sys)
+{
+	if(msg_sys == NULL)
+	{// å‘é€å¿ƒè·³åŒ…
+		msg_sys = new MSG_SYS;
+		msg_sys->nType = HEARTBEAT;
+		SendMsg(msg_sys, sizeof(MSG_SYS));
+		return 0;
+	}
+	
+	delete msg_sys;
+	return 1;
+}
+
+
+void CMFCChatDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	if(nIDEvent == TIMER_HEARTBEAT)
+	{
+		if(m_pSocketChat != NULL)
+		{
+			HeartBeat();
+			int nMaxSec = 30;
+			CTimeSpan tmsp;
+			tmsp = CTime::GetTickCount() - m_pSocketChat->m_tmLastMsg;
+			if(tmsp.GetTotalSeconds() > nMaxSec)
+			{
+				KillTimer(TIMER_HEARTBEAT);
+				MessageBox(L"è¿æ¥å·²æ–­å¼€ï¼Œè¯·é‡æ–°ç™»é™†");
+				OnCancel();
+				return;
+			}
+		}
+	}
+	if(nIDEvent == TIMER_UPDATE_FRIEND_INFO)
+	{
+		UpdateFriendInfo();
+	}
+
+	CDialogEx::OnTimer(nIDEvent);
 }

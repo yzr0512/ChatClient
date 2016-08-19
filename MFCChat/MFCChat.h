@@ -86,6 +86,8 @@ extern CMFCChatApp theApp;
 #define STATUS_HIDE                     5062
 #define STATUS_OFFLINE                  5063
 
+#define HEARTBEAT						5070
+
 //#define MESSAGE_SYSTEM					5070
 
 //***下面是通信用的结构体***
