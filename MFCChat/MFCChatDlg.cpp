@@ -16,6 +16,9 @@
 
 #define TIMER_UPDATE_FRIEND_INFO 456
 
+//定义一个全局变量，用于控制线程是否退出
+volatile BOOL IsRun = FALSE;
+
 // CMFCChatDlg 对话框
 
 CMFCChatDlg::CMFCChatDlg(CWnd* pParent /*=NULL*/)
@@ -26,6 +29,7 @@ CMFCChatDlg::CMFCChatDlg(CWnd* pParent /*=NULL*/)
 
 	m_pAddFriendDlg = NULL;
 	m_pLoginDlg = NULL;
+	m_pFileRcrdDlg = NULL;
 	m_csMyID = _T("");
 	m_pSocketChat = NULL;
 
@@ -38,6 +42,10 @@ void CMFCChatDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMBO_STATE, m_cbState);
 	DDX_Text(pDX, IDC_STATIC_USERNAME, m_csMyName);
 	DDV_MaxChars(pDX, m_csMyName, 20);
+	DDX_Control(pDX, IDC_BUTTON_ADD_FRIEND_DLG, m_BtnAddFriend);
+	DDX_Control(pDX, IDC_BT_DEL_FRIEND, m_BtnDelFriend);
+	DDX_Control(pDX, IDCANCEL, m_BtnExit);
+	DDX_Control(pDX, IDC_BT_FILE_DLG, m_BtnFileDlg);
 }
 
 BEGIN_MESSAGE_MAP(CMFCChatDlg, CDialogEx)
@@ -47,6 +55,7 @@ BEGIN_MESSAGE_MAP(CMFCChatDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_ADD_FRIEND_DLG, &CMFCChatDlg::OnBnClickedButtonAddFriendDlg)
 	ON_BN_CLICKED(IDC_BT_DEL_FRIEND, &CMFCChatDlg::OnBnClickedBtDelFriend)
 ON_WM_TIMER()
+ON_BN_CLICKED(IDC_BT_FILE_DLG, &CMFCChatDlg::OnBnClickedBtFileDlg)
 END_MESSAGE_MAP()
 
 
@@ -73,7 +82,8 @@ BOOL CMFCChatDlg::OnInitDialog()
 	}
 	//ShowWindow(SW_SHOW);
 	CenterWindow(); // 主窗口居中
-	
+	this->SetBackgroundColor(RGB(255, 255, 255)); // 设置背景颜色
+
 	UpdateData(TRUE);
 	
 	// 显示用户名
@@ -262,15 +272,11 @@ int CMFCChatDlg::RecvMsg(void)
 	case LOGIN_SUCCESS: // 登录成功
 		LoginSuccess((struct MSG_USERINFO*)msg_recv);
 		break;	
-	case CHATING_TEXT_MSG:
-		struct MSG_TRANSPOND *chatmsg;
-		chatmsg = (MSG_TRANSPOND *)msg_recv;
-		m_listChatMsg.AddTail(chatmsg);	
-		m_Friend.SetIsHaveMsg(chatmsg->FromID, TRUE);
-		RefreshChatDlgMsg();
-		//RefreshListCtrlData();
+
+	case HEARTBEAT:
 		break;
-	case REGISTER_SUCCESS:
+
+	case REGISTER_SUCCESS: // 注册成功
 		//m_dlgLogin.m_dlgRegist.RegisterSuccess((struct MSG_REGISTER*)&msg_recv);
 		m_pLoginDlg->m_pRegDlg->RegisterSuccess((struct MSG_REGISTER*)msg_recv);
 		break;
@@ -291,7 +297,37 @@ int CMFCChatDlg::RecvMsg(void)
 	case GET_ALL_FRIEND_INFO:
 		UpdateFriendInfo((MSG_FRND_INFO*)msg_recv);
 		break;
+
+		// 一对一聊天消息
+	case CHATING_TEXT_MSG:
+		struct MSG_TRANSPOND *chatmsg;
+		chatmsg = (MSG_TRANSPOND *)msg_recv;
+		m_listChatMsg.AddTail(chatmsg);	
+		m_Friend.SetIsHaveMsg(chatmsg->FromID, TRUE);
+		RefreshChatDlgMsg();
+		//RefreshListCtrlData();
+		break;
+
+		// 文件传输请求
+	case MESSAGE_FILE_REQUEST: // 接收到请求
+		AnswerFileRequest((MSG_FILE_REQUEST*)msg_recv);
+		break;
+	case MESSAGE_FILE_AGREE: // 同意
+		StartFileTrans((MSG_FILE_REQUEST*)msg_recv);
+		break;
+	case MESSAGE_FILE_REFUSE: // 拒绝
+		MessageBox(L"对方拒绝了你的文件发送请求。", L"系统消息");
+		break;
+
+		// 收到各种信息
+	case GET_FRIEND_INFO: // 一个人的详细信息
+		UpdateOneFriendInfo((MSG_USERINFO*)msg_recv);
+		break;
+
+
+
 	default:
+		GetDesktopWindow()->MessageBox(L"收到未定义的数据类型！", L"系统提示");
 		break;
 	}
 
@@ -314,6 +350,10 @@ int CMFCChatDlg::SendMsg(void *msg, int nBufLen)
 			return 0;
 		}
 	}
+	//MSG_HEAD msg_head;
+	//msg_head.nType = MESSAGE_HEAD;
+	//msg_head.nMsgSize = nBufLen;
+	//m_pSocketChat->Send(msg_head, sizeof(MSG_HEAD));
 
 	int nRes;
 	nRes = m_pSocketChat->Send(msg, nBufLen);
@@ -431,7 +471,8 @@ void CMFCChatDlg::OnBnClickedBtDelFriend()
 	
 }
 
-
+// 登陆
+//
 /*********************************************************
 函数名称：LoginSuccess
 功能描述：登录成功
@@ -448,7 +489,8 @@ int CMFCChatDlg::LoginSuccess(MSG_USERINFO* msg_info)
 	m_pLoginDlg->OnCancel(); // 关闭登录窗口
 	m_pLoginDlg = NULL;
 	m_csMyName = (LPCTSTR)msg_info->Name; // 用户昵称
-	//MessageBox(L"登陆成功！");
+	SetWindowTextW(m_csMyName + L" 的主窗口");
+
 	ShowWindow(SW_SHOW);
 	UpdateData(FALSE);
 	UpdateFriendInfo();
@@ -458,7 +500,6 @@ int CMFCChatDlg::LoginSuccess(MSG_USERINFO* msg_info)
 
 	return 0;
 }
-
 
 /*********************************************************
 函数名称：LoginOut
@@ -479,6 +520,35 @@ int CMFCChatDlg::LoginOut(void)
 	m_pSocketChat->Close();
 	delete m_pSocketChat;
 	m_pSocketChat = NULL;
+
+	return 0;
+}
+
+/*********************************************************
+函数名称：UpdateFriendInfo
+功能描述：更新全部好友信息
+参数说明：msg_info-全部好友的ID、名字和状态
+创建日期：2016-08-07
+返 回 值：
+备    注：如果参数为空 则是向服务器发送请求消息
+*********************************************************/
+int CMFCChatDlg::UpdateFriendInfo(MSG_FRND_INFO* msg_info)
+{
+	if(msg_info == NULL)
+	{
+		msg_info = new MSG_FRND_INFO;
+		msg_info->nType = GET_ALL_FRIEND_INFO;
+		memset(msg_info->ListID, 0, ID_MAX * FRIEND_MAX);
+		memset(msg_info->ListName, 0, NAME_MAX * FRIEND_MAX);
+		SendMsg(msg_info, sizeof(*msg_info));
+		return FALSE;
+	}
+
+	m_Friend.UpdateBasicInfo(msg_info);
+
+	m_Friend.ShowFriendInfo(&m_lstctlFriend);
+
+	UpdateData(FALSE);
 
 	return 0;
 }
@@ -516,6 +586,8 @@ int CMFCChatDlg::SystemMessage(MSG_SYS* msg_sys)
 }
 
 
+// 添加好友
+//
 /*********************************************************
 函数名称：RecvAddFriendRequest
 功能描述：收到好友请求
@@ -544,36 +616,8 @@ int CMFCChatDlg::RecvAddFriendRequest(struct MSG_TRANSPOND* msg_add)
 }
 
 
-/*********************************************************
-函数名称：UpdateFriendInfo
-功能描述：更新全部好友信息
-参数说明：msg_info-全部好友的ID、名字和状态
-创建日期：2016-08-07
-返 回 值：
-备    注：如果参数为空 则是向服务器发送请求消息
-*********************************************************/
-int CMFCChatDlg::UpdateFriendInfo(MSG_FRND_INFO* msg_info)
-{
-	if(msg_info == NULL)
-	{
-		msg_info = new MSG_FRND_INFO;
-		msg_info->nType = GET_ALL_FRIEND_INFO;
-		memset(msg_info->ListID, 0, ID_MAX * FRIEND_MAX);
-		memset(msg_info->ListName, 0, NAME_MAX * FRIEND_MAX);
-		SendMsg(msg_info, sizeof(*msg_info));
-		return FALSE;
-	}
-	
-	m_Friend.UpdateBasicInfo(msg_info);
-
-	m_Friend.ShowFriendInfo(&m_lstctlFriend);
-	
-	UpdateData(FALSE);
-
-	return 0;
-}
-
-
+// 一对一聊天
+//
 /*********************************************************
 函数名称：OpenChatDlg
 功能描述：打开聊天对话框
@@ -587,6 +631,13 @@ int CMFCChatDlg::OpenChatDlg(int nItem)
 	m_Friend.GetItemID(nID, nItem);
 	char name[NAME_MAX];
 	m_Friend.GetFriendName(name, nID);
+	
+	//// 发送消息 请求获取好友的详细信息
+	//MSG_USERINFO msg_info;
+	//memset(&msg_info, 0, sizeof(MSG_USERINFO));
+	//msg_info.nType = GET_FRIEND_INFO;
+	//strcpy_s(msg_info.nID, nID);
+	//SendMsg(&msg_info, sizeof(MSG_USERINFO));
 
 	bool Flag = FALSE;
 	POSITION pos = m_listChatDlg.GetHeadPosition();
@@ -615,6 +666,29 @@ int CMFCChatDlg::OpenChatDlg(int nItem)
 	return 0;
 }
 
+/*********************************************************
+函数名称：UpdateOneFriendInfo（未完成）
+功能描述：更新本地的好友信息
+作    者：余志荣
+参数说明：msg_file -- 请求结构体
+创建日期：2016-08-29
+返 回 值：
+*********************************************************/
+int CMFCChatDlg::UpdateOneFriendInfo(MSG_USERINFO *msg_info)
+{
+	m_Friend.UpdateDetailInfo(msg_info);
+	POSITION pos = m_listChatDlg.GetHeadPosition();
+	while (pos != NULL)
+	{
+		CChatDlg *pDlg = m_listChatDlg.GetAt(pos);
+		if(!strcmp(pDlg->m_nID, msg_info->nID))
+		{
+			//pDlg->RefreshStatic();
+		}
+	}
+
+	return 0;
+}
 
 /*********************************************************
 函数名称：CloseChatDlg
@@ -650,6 +724,16 @@ int CMFCChatDlg::CloseChatDlg(char* nID)
 }
 
 
+// 收发心跳包
+//
+/*********************************************************
+函数名称：HeartBeat
+功能描述：收发心跳包
+作    者：余志荣
+参数说明：msg_sys -- 此参数为NULL时是发送 不为NULL时是接收
+创建日期：2016-08-15
+返 回 值：
+*********************************************************/
 int CMFCChatDlg::HeartBeat(MSG_SYS* msg_sys)
 {
 	if(msg_sys == NULL)
@@ -664,7 +748,14 @@ int CMFCChatDlg::HeartBeat(MSG_SYS* msg_sys)
 	return 1;
 }
 
-
+/*********************************************************
+函数名称：OnTimer
+功能描述：定时检测与服务器的连接 若超过一定时间则关闭程序
+作    者：余志荣
+参数说明：
+创建日期：2016-08-15
+返 回 值：
+*********************************************************/
 void CMFCChatDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	if(nIDEvent == TIMER_HEARTBEAT)
@@ -672,7 +763,7 @@ void CMFCChatDlg::OnTimer(UINT_PTR nIDEvent)
 		if(m_pSocketChat != NULL)
 		{
 			HeartBeat();
-			int nMaxSec = 30;
+			int nMaxSec = 30000;
 			CTimeSpan tmsp;
 			tmsp = CTime::GetTickCount() - m_pSocketChat->m_tmLastMsg;
 			if(tmsp.GetTotalSeconds() > nMaxSec)
@@ -690,4 +781,221 @@ void CMFCChatDlg::OnTimer(UINT_PTR nIDEvent)
 	}
 
 	CDialogEx::OnTimer(nIDEvent);
+}
+
+
+// 文件传输
+//
+/*********************************************************
+函数名称：OnBnClickedBtFileDlg
+功能描述：打开文件传输记录窗口
+作    者：余志荣
+参数说明：
+创建日期：2016-08-29
+返 回 值：
+*********************************************************/
+void CMFCChatDlg::OnBnClickedBtFileDlg()
+{
+	// 如果窗口不存在就创建一个 如果有的话直接显示
+	if(m_pFileRcrdDlg == NULL)
+	{
+		m_pFileRcrdDlg = new CFileRecordDlg();
+		m_pFileRcrdDlg->Create(IDD_FILE_DLG,this->GetDesktopWindow());
+		m_pFileRcrdDlg->ShowWindow(SW_SHOW);
+	}
+	else
+	{
+		m_pFileRcrdDlg->ShowWindow(SW_SHOW);
+	}
+}
+
+/*********************************************************
+函数名称：GetAvailFileID
+功能描述：获得未被占用的文件ID号
+作    者：余志荣
+参数说明：
+创建日期：2016-08-29
+返 回 值：可用的文件ID
+*********************************************************/
+int CMFCChatDlg::GetAvailFileID(void)
+{
+	int nID = 0;
+	POSITION pos = m_FileRecordList.GetHeadPosition();
+	while(pos != NULL)
+	{
+		FILE_RECORD *pFile_record = m_FileRecordList.GetAt(pos);
+		if (nID <= pFile_record->nFileID)
+		{
+			nID = pFile_record->nFileID + 1;
+		}
+		m_FileRecordList.GetNext(pos);
+	}
+	return nID;
+}
+
+/*********************************************************
+函数名称：AnswerFileRequest
+功能描述：回应文件传输请求
+作    者：余志荣
+参数说明：msg_file -- 请求结构体
+创建日期：2016-08-29
+返 回 值：
+*********************************************************/
+int CMFCChatDlg::AnswerFileRequest(MSG_FILE_REQUEST* msg_file)
+{
+	CString strFromID;
+	strFromID = msg_file->FromID;
+	CString strFileName;
+	strFileName = msg_file->FileName;
+	CString strFileSize;
+	if(msg_file->nFileSize >= 1073741824) // 大于1GB
+	{
+		strFileSize.Format(L" %.2lf GB", msg_file->nFileSize / 1073741824.0);
+	}
+	else if(msg_file->nFileSize >= 1048576) // 小于1GB大于1MB
+	{
+		strFileSize.Format(L" %.2lf MB", msg_file->nFileSize / 1048576.0);
+	}
+	else
+	{
+		strFileSize.Format(L" %.2lf KB", msg_file->nFileSize / 1024.0);
+	}
+	int nRes;
+	nRes = GetDesktopWindow()->MessageBox(L"收到未定义的数据类型！");MessageBox(L"账号：" + strFromID + L" 请求发送文件:\r\n" + strFileName + strFileSize +
+		L"\r\n是否同意请求？", L"文件传输请求", MB_YESNO);
+	if(nRes == IDOK)
+	{
+		msg_file->nType = MESSAGE_FILE_AGREE;
+		SendMsg(msg_file, sizeof(MSG_FILE_REQUEST));
+	}
+	else
+	{
+		msg_file->nType = MESSAGE_FILE_REFUSE;
+		SendMsg(msg_file, sizeof(MSG_FILE_REQUEST));
+	}
+	return 0;
+}
+
+/*********************************************************
+函数名称：StartFileTrans
+功能描述：回应文件传输请求
+作    者：余志荣
+参数说明：msg_file -- 请求结构体
+创建日期：2016-08-29
+返 回 值：
+*********************************************************/
+int CMFCChatDlg::StartFileTrans(MSG_FILE_REQUEST *msg_ans)
+{
+	MessageBox(L"文件开始传啦！");
+	//m_TestThread = AfxBeginThread(FileCopy, this);
+	//FileCopy(this);
+	//IsRun = TRUE;
+	return 0;
+}
+
+UINT AFX_CDECL SendFile(LPVOID lpParam)
+{	/*
+	CFile fileSrc;
+	// 参数一 文件的路径
+	// 参数二 打开文件的模式
+	//  CFile::modeCreate  创建方式打开文件，如文件已存在则将其长度设置为0
+	//  CFile::modeRead 只读方式打开文件
+	//  CFile::modeWrite 写入方式打开文件
+	fileSrc.Open(strFilePath, CFile::modeRead);	
+	//fileDest.Open(csDesPath + fileSrc.GetFileName(), CFile::modeCreate|CFile::modeWrite);
+
+	// 文件总长度
+	ULONGLONG fileSize = fileSrc.GetLength();
+	// 已拷贝的长度
+	ULONGLONG hadCopy = 0;
+
+	//int nBufSize = 1024;
+	char Buf[4096];
+	while(IsRun)
+	{
+		// 读取文件数据
+		memset(Buf, '\0', sizeof(Buf));
+		int ret = fileSrc.Read(Buf, sizeof(Buf));
+
+		// 写入文件
+		fileDest.Write(Buf, ret);
+		
+		hadCopy += ret;
+		
+		if(fileSize != 0)
+			((CFileCopyDlg*)lpParam)->m_fRate = hadCopy / (float)fileSize; // 进度
+
+		((CFileCopyDlg*)lpParam)->m_csMsg.Format(_T("进度：%.2fMB/%.2fMB"), hadCopy / 1024.0 / 1024.0, fileSize / 1024.0 / 1024.0);
+		// 如果到达文件结尾则中止循环
+		if(ret < sizeof(Buf))
+		{
+			((CFileCopyDlg*)lpParam)->m_csMsg = "进度：复制完成！";
+			break;
+		}
+	}
+
+	// 关闭文件 
+	fileDest.Close();
+	fileSrc.Close();
+
+	if(!IsRun)
+	{
+		((CFileCopyDlg*)lpParam)->m_csMsg = "进度：复制被中断！";		
+	}
+	IsRun = FALSE;
+	*/
+	return 0;
+}
+UINT AFX_CDECL RecvFile(LPVOID lpParam)
+{	/*
+	CFile fileSrc;
+	// 参数一 文件的路径
+	// 参数二 打开文件的模式
+	//  CFile::modeCreate  创建方式打开文件，如文件已存在则将其长度设置为0
+	//  CFile::modeRead 只读方式打开文件
+	//  CFile::modeWrite 写入方式打开文件
+	fileSrc.Open(strFilePath, CFile::modeRead);	
+	//fileDest.Open(csDesPath + fileSrc.GetFileName(), CFile::modeCreate|CFile::modeWrite);
+
+	// 文件总长度
+	ULONGLONG fileSize = fileSrc.GetLength();
+	// 已拷贝的长度
+	ULONGLONG hadCopy = 0;
+
+	//int nBufSize = 1024;
+	char Buf[4096];
+	while(IsRun)
+	{
+		// 读取文件数据
+		memset(Buf, '\0', sizeof(Buf));
+		int ret = fileSrc.Read(Buf, sizeof(Buf));
+
+		// 写入文件
+		fileDest.Write(Buf, ret);
+		
+		hadCopy += ret;
+		
+		if(fileSize != 0)
+			((CFileCopyDlg*)lpParam)->m_fRate = hadCopy / (float)fileSize; // 进度
+
+		((CFileCopyDlg*)lpParam)->m_csMsg.Format(_T("进度：%.2fMB/%.2fMB"), hadCopy / 1024.0 / 1024.0, fileSize / 1024.0 / 1024.0);
+		// 如果到达文件结尾则中止循环
+		if(ret < sizeof(Buf))
+		{
+			((CFileCopyDlg*)lpParam)->m_csMsg = "进度：复制完成！";
+			break;
+		}
+	}
+
+	// 关闭文件 
+	fileDest.Close();
+	fileSrc.Close();
+
+	if(!IsRun)
+	{
+		((CFileCopyDlg*)lpParam)->m_csMsg = "进度：复制被中断！";		
+	}
+	IsRun = FALSE;
+	*/
+	return 0;
 }

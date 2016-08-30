@@ -43,5 +43,8 @@ protected:
 	BOOL IsExist(CFriendInfo** p, char* nID)const;
 
 	CList<CFriendInfo*, CFriendInfo*> m_friendlist;
+public:
+	int UpdateDetailInfo(MSG_USERINFO* msg_info);
+	int GetDetailInfo(MSG_USERINFO* msg_info);
 };
 

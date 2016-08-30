@@ -22,6 +22,15 @@
     <None Include="res\MFCChat.ico">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="..\..\bin\关闭.png">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\LoginLogo.bmp">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\..\..\bin\关闭.png">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MFCChat.h">
@@ -57,6 +66,18 @@
     <ClInclude Include="Friend.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="MyButton.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MyEdit.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FileRecordDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Struct.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCChat.cpp">
@@ -84,6 +105,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Friend.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MyButton.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MyEdit.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FileRecordDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

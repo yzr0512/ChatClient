@@ -6,13 +6,12 @@
 
 #include "afxcmn.h"
 #include "afxwin.h"
-#include <vector>
 #include "ChatDlg.h"
 #include "LoginDlg.h"
 #include "AddFriendDlg.h"
 #include "ChatSocket.h"
 #include "Friend.h"
-
+#include "FileRecordDlg.h"
 
 // CMFCChatDlg 对话框
 class CMFCChatDlg : public CDialogEx
@@ -49,7 +48,8 @@ public:
 	// 对话框
 	CLoginDlg* m_pLoginDlg; // 登录窗口指针
 	CAddFriendDlg* m_pAddFriendDlg; // “添加好友”对话框
-	std::vector<CChatDlg*> m_vecpChatDlg; // 多个聊天窗口
+	CFileRecordDlg* m_pFileRcrdDlg; // 文件传输记录对话框
+	//std::vector<CChatDlg*> m_vecpChatDlg; // 多个聊天窗口
 	
 	// 本人信息
 	CString m_csMyID; // 我的ID
@@ -69,7 +69,7 @@ public:
 	int RecvAddFriendRequest(struct MSG_TRANSPOND* msg_add); // 收到好友请求
 	int UpdateFriendInfo(struct MSG_FRND_INFO* msg_info = NULL); // 更新好友基本信息
 	int HeartBeat(MSG_SYS* msg_sys = NULL);
-
+	int AnswerFileRequest(MSG_FILE_REQUEST* msg_file);
 	int OpenChatDlg(int nItem);
 	int CloseChatDlg(char* nID);
 
@@ -85,6 +85,17 @@ protected:
 	
 	CList<struct MSG_TRANSPOND*, struct MSG_TRANSPOND*> m_listChatMsg; // 待阅读的聊天消息列表
 	CList<CChatDlg*, CChatDlg*> m_listChatDlg; // 聊天窗口链表
-	
+	CList<FILE_RECORD*, FILE_RECORD*> m_FileRecordList;
+
+public:
+	CBtnRndRct m_BtnAddFriend;
+	CBtnRndRct m_BtnDelFriend;
+	CBtnRndRct m_BtnExit;
+	CBtnRndRct m_BtnFileDlg;
+	afx_msg void OnBnClickedBtFileDlg();
+	int GetAvailFileID(void);
+
+	int StartFileTrans(MSG_FILE_REQUEST *msg_ans);
+	int UpdateOneFriendInfo(MSG_USERINFO *msg_info);
 };
 

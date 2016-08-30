@@ -224,3 +224,49 @@ int CFriend::SetIsHaveMsg(char* nID, bool status)
 	return 0;
 }
 
+
+/*********************************************************
+函数名称：UpdateDetailInfo
+功能描述：更新某个ID的详细信息
+创建时间：2016-08-29
+参数说明：msg_info -- 某个ID的详细信息
+返 回 值：
+*********************************************************/
+int CFriend::UpdateDetailInfo(MSG_USERINFO* msg_info)
+{
+	CFriendInfo *p = NULL;
+	if(IsExist(&p, msg_info->nID))
+	{
+		strcpy_s(p->m_Name, msg_info->Name);
+		strcpy_s(p->m_Email, msg_info->Email);
+		p->m_nAge = msg_info->nAge;
+		p->m_Sex = msg_info->Sex;
+		p->m_nStatus = msg_info->nStatus;
+	}
+	else
+	{
+
+	}
+	
+	return 0;
+}
+
+
+int CFriend::GetDetailInfo(MSG_USERINFO* msg_info)
+{	
+	CFriendInfo *p = NULL;
+	if(IsExist(&p, msg_info->nID))
+	{
+		strcpy_s(msg_info->Name, p->m_Name);
+		strcpy_s(msg_info->Email, p->m_Email);
+		msg_info->nAge = p->m_nAge;
+		msg_info->Sex = p->m_Sex;
+		msg_info->nStatus = p->m_nStatus;
+	}
+	else
+	{
+
+	}
+	
+	return 0;
+}

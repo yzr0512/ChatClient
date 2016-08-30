@@ -7,6 +7,7 @@
 #include "afxdialogex.h"
 #include "MFCChatDlg.h"
 
+
 // CAddFriendDlg dialog
 
 IMPLEMENT_DYNAMIC(CAddFriendDlg, CDialogEx)
@@ -28,6 +29,10 @@ void CAddFriendDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LIST_FIND_FRIEND, m_listctrlFriend);
 	DDX_Text(pDX, IDC_EDIT_FRIEND_NAME, m_csFriendID);
+	// UI	
+	DDX_Control(pDX, IDC_BUTTON_ADD_FRIEND, m_BtnAddFrnd);
+
+	DDX_Control(pDX, IDC_BUTTON_FIND, m_BtnFind);
 }
 
 
@@ -72,6 +77,7 @@ BOOL CAddFriendDlg::OnInitDialog()
 	CDialogEx::OnInitDialog();
 
 	// TODO:  在此添加额外的初始化
+	this->SetBackgroundColor(RGB(255, 255, 255)); // 设置背景颜色
 	InitListCtrlStyle();
 
 	//RefreshListCtrlData();  

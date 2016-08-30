@@ -37,6 +37,11 @@ void CLoginDlg::DoDataExchange(CDataExchange* pDX)
 	// 密码 字符上限KEY_MAX
 	DDX_Text(pDX, IDC_EDIT_KEY_LOGIN, m_csKey);
 	DDV_MaxChars(pDX, m_csKey, KEY_MAX - 1);
+
+	DDX_Control(pDX, IDC_BUTTON_LOGIN, m_BtnLogin);
+	DDX_Control(pDX, IDC_BUTTON_REGIST_DLG, m_BtnRegist);
+	DDX_Control(pDX, IDC_BTN_CLOSE, m_BtnClose);
+	
 }
 
 
@@ -44,6 +49,7 @@ BEGIN_MESSAGE_MAP(CLoginDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_LOGIN, &CLoginDlg::OnBnClickedButtonLogin)
 	ON_BN_CLICKED(IDC_BUTTON_REGIST_DLG, &CLoginDlg::OnBnClickedButtonRegDlg)
 	ON_WM_SYSCOMMAND()
+	ON_WM_PAINT()
 END_MESSAGE_MAP()
 
 
@@ -141,4 +147,37 @@ void CLoginDlg::PostNcDestroy()
 	// TODO: 在此添加专用代码和/或调用基类
 	//delete this;
 	CDialogEx::PostNcDestroy();
+}
+
+
+BOOL CLoginDlg::OnInitDialog()
+{
+	CDialogEx::OnInitDialog();
+	
+	// 右上角关闭按钮
+	//CRect rcClient;
+	//GetClientRect(&rcClient);	
+	//m_BtnClose.SetImage(IDB_PNG_CLOSE, L"PNG");
+	//CRect rcBtn;
+	//m_BtnClose.GetClientRect(&rcBtn);
+	//m_BtnClose.SetWindowPos(NULL, rcClient.Width() - rcBtn.Width(), 0, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
+	this->SetBackgroundColor(RGB(255, 255, 255)); // 设置背景颜色
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+	
+}
+
+
+void CLoginDlg::OnPaint()
+{
+	CPaintDC dc(this); // device context for painting
+	
+	//CRect rcClient;
+	//GetClientRect(&rcClient);
+	//CRect rcTop(rcClient.TopLeft(), CPoint(rcClient.Width(), rcClient.Height() * 0.4));	
+	//CBrush BlueBrush(RGB(4, 142, 255));
+	//dc.FillRect(&rcTop, &BlueBrush);
+
+
 }

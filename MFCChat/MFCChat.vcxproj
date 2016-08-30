@@ -94,7 +94,10 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="..\..\..\bin\关闭.png" />
+    <None Include="..\..\bin\关闭.png" />
     <None Include="ReadMe.txt" />
+    <None Include="res\LoginLogo.bmp" />
     <None Include="res\MFCChat.ico" />
     <None Include="res\MFCChat.rc2" />
   </ItemGroup>
@@ -102,23 +105,30 @@
     <ClInclude Include="AddFriendDlg.h" />
     <ClInclude Include="ChatDlg.h" />
     <ClInclude Include="ChatSocket.h" />
+    <ClInclude Include="FileRecordDlg.h" />
     <ClInclude Include="Friend.h" />
     <ClInclude Include="LoginDlg.h" />
     <ClInclude Include="MFCChat.h" />
     <ClInclude Include="MFCChatDlg.h" />
+    <ClInclude Include="MyButton.h" />
+    <ClInclude Include="MyEdit.h" />
     <ClInclude Include="RegistDlg.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Struct.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AddFriendDlg.cpp" />
     <ClCompile Include="ChatDlg.cpp" />
     <ClCompile Include="ChatSocket.cpp" />
+    <ClCompile Include="FileRecordDlg.cpp" />
     <ClCompile Include="Friend.cpp" />
     <ClCompile Include="LoginDlg.cpp" />
     <ClCompile Include="MFCChat.cpp" />
     <ClCompile Include="MFCChatDlg.cpp" />
+    <ClCompile Include="MyButton.cpp" />
+    <ClCompile Include="MyEdit.cpp" />
     <ClCompile Include="RegistDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

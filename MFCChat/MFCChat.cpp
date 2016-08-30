@@ -5,6 +5,8 @@
 #include "stdafx.h"
 #include "MFCChat.h"
 #include "MFCChatDlg.h"
+#include "MyButton.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -34,7 +34,7 @@ void CRegistDlg::DoDataExchange(CDataExchange* pDX)
 
 	DDX_Text(pDX, IDC_EDIT_NAME_REG, m_csName);
 	DDV_MaxChars(pDX, m_csName, NAME_MAX);
-	
+
 	DDX_Text(pDX, IDC_EDIT_KEY_REGIST, m_csKey);
 	DDV_MaxChars(pDX, m_csKey, KEY_MAX);
 	DDX_Text(pDX, IDC_EDIT_KEY_AGAIN_REGIST, m_csKey2);
@@ -44,6 +44,7 @@ void CRegistDlg::DoDataExchange(CDataExchange* pDX)
 
 	DDX_Text(pDX, IDC_EDIT_AGE_REG, m_nAge);
 	DDV_MinMaxUInt(pDX, m_nAge, 0, 150);
+	DDX_Control(pDX, IDC_BUTTON_REGIST, m_BtnRegist);
 }
 
 
@@ -157,4 +158,13 @@ void CRegistDlg::PostNcDestroy()
 	delete this;
 
 	CDialogEx::PostNcDestroy();
+}
+
+
+BOOL CRegistDlg::OnInitDialog()
+{
+	CDialogEx::OnInitDialog();
+	this->SetBackgroundColor(RGB(255, 255, 255)); // ÉèÖÃ±³¾°ÑÕÉ«
+
+	return TRUE;  // return TRUE unless you set the focus to a control
 }

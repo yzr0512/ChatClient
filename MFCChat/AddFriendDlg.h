@@ -1,5 +1,7 @@
 #pragma once
 
+#include "MyButton.h"
+#include "afxwin.h"
 
 // CAddFriendDlg dialog
 
@@ -29,4 +31,6 @@ protected:
 	CString m_csFriendID; // ¶Ô·½ID
 	CWnd* m_pParentWnd; // ¸¸´°¿Ú
 
+	CBtnRndRct m_BtnAddFrnd;
+	CBtnRndRct m_BtnFind;
 };

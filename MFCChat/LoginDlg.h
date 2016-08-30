@@ -1,5 +1,7 @@
 #pragma once
 
+#include "MyButton.h"
+
 // CLoginDlg 对话框
 class CRegistDlg; // 类的前向声明 不能创建对象 但可以设指针
 
@@ -31,4 +33,10 @@ public:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	virtual void OnCancel();
 	virtual void PostNcDestroy();
+
+	CBtnRndRct m_BtnLogin;
+	CBtnRndRct m_BtnRegist;
+	CBtnImage  m_BtnClose;
+	virtual BOOL OnInitDialog();
+	afx_msg void OnPaint();
 };
