@@ -1,3 +1,12 @@
+
+/************************************************
+文 件 名：LoginDlg.h
+作    者：余志荣
+创建日期：2016-08-29
+用    途：登陆窗口的头文件
+修改记录：2016-08-29 余志荣 创建
+************************************************/ 
+
 #pragma once
 
 #include "MyButton.h"
@@ -21,22 +30,24 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-	afx_msg void OnBnClickedButtonLogin();
-	afx_msg void OnBnClickedButtonRegDlg();
+	afx_msg void OnBnClickedButtonLogin(); // 登陆
+	afx_msg void OnBnClickedButtonRegDlg(); // 注册
+	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
+	afx_msg void OnPaint();
+	virtual BOOL OnInitDialog();
 
 	CString m_csID; // 账号
 	CString m_csKey; // 密码	
 	
 	CRegistDlg* m_pRegDlg; // 注册窗口
 	CWnd* m_pParentWnd;	
-	
-	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
+
 	virtual void OnCancel();
 	virtual void PostNcDestroy();
 
+	// 按钮控件变量 用来重绘按钮
 	CBtnRndRct m_BtnLogin;
 	CBtnRndRct m_BtnRegist;
 	CBtnImage  m_BtnClose;
-	virtual BOOL OnInitDialog();
-	afx_msg void OnPaint();
+
 };

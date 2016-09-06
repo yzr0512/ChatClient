@@ -1,3 +1,13 @@
+
+
+/************************************************
+文 件 名：LoginDlg.cpp
+作    者：余志荣
+创建日期：2016-08-29
+用    途：登陆窗口的实现文件
+修改记录：2016-08-29 余志荣 创建
+************************************************/ 
+
 // LoginDlg.cpp : 实现文件
 //
 
@@ -133,7 +143,7 @@ void CLoginDlg::OnSysCommand(UINT nID, LPARAM lParam)
 void CLoginDlg::OnCancel()
 {
 	// TODO: 在此添加专用代码和/或调用基类
-
+	//((CMFCChatDlg*)theApp.m_pMainWnd)->m_pLoginDlg = NULL;
 	//DestroyWindow();
 	CDialogEx::OnCancel();
 }

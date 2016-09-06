@@ -22,13 +22,28 @@
     <None Include="res\MFCChat.ico">
       <Filter>资源文件</Filter>
     </None>
-    <None Include="..\..\bin\关闭.png">
-      <Filter>资源文件</Filter>
-    </None>
     <None Include="res\LoginLogo.bmp">
       <Filter>资源文件</Filter>
     </None>
-    <None Include="..\..\..\bin\关闭.png">
+    <None Include="res\bitmap1.bmp">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\头像.bmp">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\Logo_offline.ico">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\Logo_online.ico">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\icon1.ico">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\logo_offline.bmp">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\logo_online.bmp">
       <Filter>资源文件</Filter>
     </None>
   </ItemGroup>
@@ -69,13 +84,13 @@
     <ClInclude Include="MyButton.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MyEdit.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="FileRecordDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Struct.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSocket.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -110,10 +125,10 @@
     <ClCompile Include="MyButton.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MyEdit.cpp">
+    <ClCompile Include="FileRecordDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="FileRecordDlg.cpp">
+    <ClCompile Include="FileSocket.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

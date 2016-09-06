@@ -1,3 +1,11 @@
+/************************************************
+文 件 名：RegistDlg.cpp
+作    者：余志荣
+创建日期：2016-08-29
+用    途：注册对话框的实现文件
+修改记录：2016-08-29 余志荣 创建
+************************************************/ 
+
 // RegistDlg.cpp : implementation file
 //
 
@@ -83,7 +91,10 @@ void CRegistDlg::OnBnClickedButtonRegist()
 		MessageBox(L"请选择性别！");
 		return;	
 	}
-
+	if (m_nAge >= 150 || m_nAge < 0)
+	{// 年龄不符合要求
+		return;
+	}
 	struct MSG_REGISTER msg_reg;
 	msg_reg.nType = REGISTER;
 

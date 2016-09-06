@@ -94,24 +94,29 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\..\..\bin\关闭.png" />
-    <None Include="..\..\bin\关闭.png" />
     <None Include="ReadMe.txt" />
+    <None Include="res\bitmap1.bmp" />
+    <None Include="res\icon1.ico" />
     <None Include="res\LoginLogo.bmp" />
+    <None Include="res\logo_offline.bmp" />
+    <None Include="res\Logo_offline.ico" />
+    <None Include="res\logo_online.bmp" />
+    <None Include="res\Logo_online.ico" />
     <None Include="res\MFCChat.ico" />
     <None Include="res\MFCChat.rc2" />
+    <None Include="res\头像.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AddFriendDlg.h" />
     <ClInclude Include="ChatDlg.h" />
     <ClInclude Include="ChatSocket.h" />
     <ClInclude Include="FileRecordDlg.h" />
+    <ClInclude Include="FileSocket.h" />
     <ClInclude Include="Friend.h" />
     <ClInclude Include="LoginDlg.h" />
     <ClInclude Include="MFCChat.h" />
     <ClInclude Include="MFCChatDlg.h" />
     <ClInclude Include="MyButton.h" />
-    <ClInclude Include="MyEdit.h" />
     <ClInclude Include="RegistDlg.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -123,12 +128,12 @@
     <ClCompile Include="ChatDlg.cpp" />
     <ClCompile Include="ChatSocket.cpp" />
     <ClCompile Include="FileRecordDlg.cpp" />
+    <ClCompile Include="FileSocket.cpp" />
     <ClCompile Include="Friend.cpp" />
     <ClCompile Include="LoginDlg.cpp" />
     <ClCompile Include="MFCChat.cpp" />
     <ClCompile Include="MFCChatDlg.cpp" />
     <ClCompile Include="MyButton.cpp" />
-    <ClCompile Include="MyEdit.cpp" />
     <ClCompile Include="RegistDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -1,3 +1,14 @@
+
+
+/************************************************
+文 件 名：MyButton.cpp
+作    者：余志荣
+创建日期：2016-08-29
+用    途：重绘按钮的样式
+修改记录：2016-08-29 余志荣 创建
+************************************************/ 
+
+
 #include "stdafx.h"
 #include "MyButton.h"
 
@@ -5,7 +16,7 @@
 #define CTRL_NOFOCUS  0x101    
 #define CTRL_FOCUS    0x102  
 #define CTRL_SELECTED 0x103  
-// CBtnBase 
+// CBtnBase 重绘按钮基类
 
 IMPLEMENT_DYNAMIC(CBtnBase, CButton)
 
@@ -33,8 +44,6 @@ END_MESSAGE_MAP()
 
 
 // CBtnBase 消息处理程序
-
-
 
 // 鼠标左键按下
 void CBtnBase::OnLButtonDown(UINT nFlags, CPoint point)
@@ -119,14 +128,14 @@ BOOL CBtnBase::OnEraseBkgnd(CDC* pDC)
 
 void CBtnBase::PreSubclassWindow()
 {
-	SetButtonStyle(BS_OWNERDRAW);
+	SetButtonStyle(BS_OWNERDRAW); // 设置为可重绘
 
 	CButton::PreSubclassWindow();
 }
 
 
 
-// CBtnRndRct
+// CBtnRndRct 圆角矩形
 
 
 CBtnRndRct::CBtnRndRct()
@@ -169,7 +178,7 @@ CBtnRndRct::~CBtnRndRct()
 	}
 }
 
-
+// 绘制函数
 void CBtnRndRct::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
 	CDC dc;  
@@ -226,7 +235,7 @@ void CBtnRndRct::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	dc.Detach();
 }
 
-
+// 绘制圆角矩形
 void CBtnRndRct::DrawRoundRect(CDC& dc, int radius, CRect rect, COLORREF clrBK)
 {
 	POINT pt;
@@ -246,7 +255,7 @@ void CBtnRndRct::DrawRoundRect(CDC& dc, int radius, CRect rect, COLORREF clrBK)
 
 }
 
-
+// 设置颜色
 void CBtnRndRct::SetColor(COLORREF clrFont, COLORREF clrBKFocus, 
 		COLORREF clrBKUnfocus, COLORREF clrBKSelected, COLORREF clrBKDisable)
 {
@@ -257,7 +266,7 @@ void CBtnRndRct::SetColor(COLORREF clrFont, COLORREF clrBKFocus,
 	m_clrBKDisable = clrBKDisable;
 }
 
-
+// 设置字体
 void CBtnRndRct::SetFont(CFont* pFont, BOOL bRedraw)
 {
 	if(m_pFont)
@@ -274,7 +283,7 @@ void CBtnRndRct::SetFont(CFont* pFont, BOOL bRedraw)
 
 
 
-// CBtnImage
+// CBtnImage 图片按钮
 
 
 CBtnImage::CBtnImage()
@@ -283,7 +292,7 @@ CBtnImage::CBtnImage()
 CBtnImage::~CBtnImage()
 {}
 
-
+// 绘制函数
 void CBtnImage::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
 	/*
@@ -434,6 +443,7 @@ void CBtnImage::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	return;
 }
 
+// 设置图片
 void CBtnImage::SetImage(int nResID, const CString &strImgType)
 {
 	HRSRC hrsrc = FindResource(NULL, MAKEINTRESOURCE(nResID), strImgType);
@@ -466,6 +476,8 @@ void CBtnImage::SetImage(int nResID, const CString &strImgType)
 
 
 
+
+// CBtnRadio 单选按钮
 
 IMPLEMENT_DYNAMIC(CBtnRadio, CButton)
 
@@ -504,6 +516,7 @@ CBtnRadio::CBtnRadio()
 CBtnRadio::~CBtnRadio()
 {}
 
+// 绘制函数
 void CBtnRadio::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
 	CDC dc;  
@@ -579,7 +592,7 @@ BEGIN_MESSAGE_MAP(CBtnRadio, CButton)
 	ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
 
-
+// 左键按下
 void CBtnRadio::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	//this->SetCheck(BST_CHECKED);
@@ -587,7 +600,7 @@ void CBtnRadio::OnLButtonDown(UINT nFlags, CPoint point)
 	CButton::OnLButtonDown(nFlags, point);
 }
 
-
+// 鼠标悬停
 void CBtnRadio::OnMouseHover(UINT nFlags, CPoint point)
 {
 	//int nCheck = this->GetCheck();
@@ -603,7 +616,7 @@ void CBtnRadio::OnMouseHover(UINT nFlags, CPoint point)
 	CButton::OnMouseHover(nFlags, point);
 }
 
-
+// 鼠标离开
 void CBtnRadio::OnMouseLeave()
 {
 	//int nCheck = this->GetCheck();
@@ -617,7 +630,7 @@ void CBtnRadio::OnMouseLeave()
 	CButton::OnMouseLeave();
 }
 
-
+// 鼠标移动
 void CBtnRadio::OnMouseMove(UINT nFlags, CPoint point)
 {
 	if(!m_bTracking)
@@ -636,10 +649,11 @@ void CBtnRadio::OnMouseMove(UINT nFlags, CPoint point)
 
 void CBtnRadio::PreSubclassWindow()
 {
-	SetButtonStyle(BS_OWNERDRAW);
+	SetButtonStyle(BS_OWNERDRAW); // 设置为可重绘
 	CButton::PreSubclassWindow();
 }
 
+// 设置选中
 void CBtnRadio::SetCheck(BOOL bCheck)
 {
 	m_bCheck = bCheck;
@@ -647,6 +661,7 @@ void CBtnRadio::SetCheck(BOOL bCheck)
 	Invalidate();
 }
 
+// 擦除背景
 BOOL CBtnRadio::OnEraseBkgnd(CDC* pDC)
 {
 	return TRUE;

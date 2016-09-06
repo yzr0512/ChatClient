@@ -1,3 +1,12 @@
+
+/************************************************
+File name：AddFriendDlg.cpp
+Create by：余志荣
+CreateDate：2016-08-27
+Use：“添加好友”对话框的实现文件
+Change by: 2016-08-27 by 余志荣 创建
+************************************************/ 
+
 // AddFriendDlg.cpp : implementation file
 //
 
@@ -50,7 +59,8 @@ void CAddFriendDlg::OnCancel()
 {
 	// TODO: 在此添加专用代码和/或调用基类
 
-	((CMFCChatDlg*)this->GetParent())->m_pAddFriendDlg = NULL;
+	//((CMFCChatDlg*)this->GetParent())->m_pAddFriendDlg = NULL;
+	((CMFCChatDlg*)theApp.m_pMainWnd)->m_pAddFriendDlg = NULL;
 
 	DestroyWindow();
 	//CDialogEx::OnCancel();
@@ -69,8 +79,9 @@ void CAddFriendDlg::PostNcDestroy()
 /*********************************************************
 函数名称：OnInitDialog
 功能描述：初始化对话框
+作者：    余志荣
+创建时间：2016-08-27
 返 回 值：成功返回TRUE
-备    注：
 *********************************************************/
 BOOL CAddFriendDlg::OnInitDialog()
 {
@@ -90,8 +101,9 @@ BOOL CAddFriendDlg::OnInitDialog()
 /*********************************************************
 函数名称：InitListCtrlStyle
 功能描述：初始化列表控件
-返 回 值：
-备    注：
+作者：    余志荣
+创建时间：2016-08-27
+返 回 值：无意义
 *********************************************************/
 int CAddFriendDlg::InitListCtrlStyle(void)
 {
@@ -123,8 +135,9 @@ int CAddFriendDlg::InitListCtrlStyle(void)
 /*********************************************************
 函数名称：ShowStrangerInfo
 功能描述：输出陌生人信息到列表控件中
-返 回 值：
-备    注：
+作者：    余志荣
+创建时间：2016-08-27
+返 回 值：无意义
 *********************************************************/
 int CAddFriendDlg::ShowStrangerInfo(MSG_USERINFO* msg_info)
 {
@@ -149,6 +162,7 @@ int CAddFriendDlg::ShowStrangerInfo(MSG_USERINFO* msg_info)
 	else
 		m_listctrlFriend.SetItemText(0, 3, _T("女"));
 
+	csTemp.LoadStringW(msg_info->nStatus);
 	m_listctrlFriend.SetItemText(0, 4, csTemp);
 
 	return 0;
@@ -158,8 +172,8 @@ int CAddFriendDlg::ShowStrangerInfo(MSG_USERINFO* msg_info)
 /*********************************************************
 函数名称：OnBnClickedButtonFind
 功能描述：向服务器发送查找信息
-返 回 值：
-备    注：
+作者：    余志荣
+创建时间：2016-08-27
 *********************************************************/
 void CAddFriendDlg::OnBnClickedButtonFind()
 {
@@ -169,16 +183,16 @@ void CAddFriendDlg::OnBnClickedButtonFind()
 	msg_info.nType = GET_STRANGER_INFO;
 	size_t i;
 	wcstombs_s(&i, msg_info.nID, m_csFriendID, m_csFriendID.GetLength() + 1);
-	((CMFCChatDlg*)m_pParentWnd)->SendMsg(&msg_info, sizeof(msg_info));
-
+	((CMFCChatDlg*)m_pParentWnd)->SendMsg(&msg_info, sizeof(msg_info));	
+	m_listctrlFriend.DeleteAllItems(); // 清空列表信息
 }
 
 
 /*********************************************************
 函数名称：OnBnClickedButtonAddFriend
 功能描述：发送添加好友请求
-返 回 值：
-备    注：
+作者：    余志荣
+创建时间：2016-08-27
 *********************************************************/
 void CAddFriendDlg::OnBnClickedButtonAddFriend()
 {
@@ -190,6 +204,7 @@ void CAddFriendDlg::OnBnClickedButtonAddFriend()
 		MessageBox(_T("请选中一个用户！"));
 		return;
 	}
+
 	int nRow = m_listctrlFriend.GetNextSelectedItem(pos);
 	CString csToID, csMyID;
 	csToID = m_listctrlFriend.GetItemText(nRow, 0);
